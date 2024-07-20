@@ -25,7 +25,7 @@ function Form() {
     };
 
     const deleteUser = async (id) => {
-         // เพิ่มบรรทัดนี้เพื่อดีบั๊ก
+        console.log("Deleting user with id:", id);// เพิ่มบรรทัดนี้เพื่อดีบั๊ก
         axios.delete(`http://localhost:2546/api/user/delete/${id}`)
 
         //ใน .then เราจะอัปเดตสถานะ userData โดยกรองข้อมูลใน userData และเอาผู้ใช้ที่มี id ตรงกับค่าที่ส่งมาออกไป
