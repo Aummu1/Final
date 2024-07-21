@@ -79,6 +79,40 @@ router_user.delete("/user/delete/:id", (req, res) => {
     });
 });
 
+// เส้นทาง POST ที่ /user/postconfirmdata เพื่อยืนยันและเพิ่มข้อมูลเข้าไปในตาราง professor และ car
+router_user.post("/user/postconfirmdata", async (req, res) => {
+    let body = req.body;
+    console.log(body)
+    try {
+        const queryProfessor = 'INSERT INTO professor (Name_Professor, Faculty) VALUES (?, ?)';
+        const queryCar = 'INSERT INTO car (Car_model, Car_registration) VALUES (?, ?)';
+        
+        // เพิ่มข้อมูลเข้าไปในตาราง professor
+        db.query(queryProfessor, [body.name, body.faculty], (err, result) => {
+            if (err) {
+                console.error("Error inserting data into MySQL database:", err);
+                res.status(500).send("An error occurred while inserting data into the database");
+                return;
+            }
+        });
+        
+        // เพิ่มข้อมูลเข้าไปในตาราง car
+        db.query(queryCar, [body.model, body.registration], (err, result) => {
+            if (err) {
+                console.error("Error inserting data into MySQL database:", err);
+                res.status(500).send("An error occurred while inserting data into the database");
+                return;
+            }
+        });
+
+        console.log("Confirm Registered Successfully.");
+        res.status(200).send("Confirm Registered Successfully.");
+    } catch (error) {
+        console.error("Error Registering User.\n", error);
+        res.status(500).send("Error Registering User.");
+    }
+});
+
 //ส่งออก Router เพื่อให้สามารถใช้ในไฟล์อื่นได้
 module.exports = router_user;
 
