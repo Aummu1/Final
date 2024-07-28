@@ -6,11 +6,9 @@ import Navbar from "../components/Navbar";
 
 function DataTable() {
     const [userData, setUserData] = useState([]);
-    const [nameReg, setNameReg] = useState('');
-    const [facultyReg, setFacultyReg] = useState('');
-    const [modelReg, setModelReg] = useState('');
-    const [registrationReg, setRegistrationReg] = useState('');
     const [allChecked, setAllChecked] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 7;
 
     useEffect(() => {
         fetchUserData();
@@ -26,25 +24,35 @@ function DataTable() {
             });
     };
 
-    const deleteUser = async (id) => {
-        axios.delete(`http://localhost:2546/api/user/delete/${id}`)
-            .then(() => {
-                setUserData(userData.filter(user => user.id !== id));
-            })
-            .catch(error => {
-                console.error("Error deleting data:", error);
-            });
+    const deleteSelectedUsers = async () => {
+        const selectedUsers = userData.filter(user => user.checked); //user => user.checked เป็น callback function ที่ใช้กับ filter โดยจะทำการตรวจสอบว่า user.checked เป็น true หรือไม่
+        //user => user.id เป็น callback function ที่ใช้กับ map โดยจะดึงค่า id ของแต่ละผู้ใช้ใน selectedUsers
+        const selectedIds = selectedUsers.map(user => user.id);//selectedUsers เป็น array ที่ได้มาจากการกรองผู้ใช้ที่ถูกเลือก (checked)
+
+        try {
+            //Promise.all จะทำการลบผู้ใช้ทั้งหมดที่มี id อยู่ใน selectedIds โดยใช้ axios.delete สำหรับแต่ละ id
+            await Promise.all(selectedIds.map(id => axios.delete(`http://localhost:2546/api/user/delete/${id}`)));
+            setUserData(userData.filter(user => !user.checked));
+        } catch (error) {
+            console.error("Error deleting data:", error);
+        }
     };
 
     const ConfirmUser = async (user) => {
+        if (!user.checked) {
+            alert("Please check the checkbox before confirming.");
+            return;
+        }
+
         try {
             const response = await axios.post(
                 "http://localhost:2546/api/user/postconfirmdata", 
                 { 
-                    name: nameReg, 
-                    faculty: facultyReg, 
-                    model: modelReg, 
-                    registration: registrationReg 
+                    id: user.id,
+                    name: user.Name_Professor, 
+                    faculty: user.Faculty, 
+                    model: user.Car_model, 
+                    registration: user.Car_Registor 
                 },
                 {
                     headers: {
@@ -54,7 +62,7 @@ function DataTable() {
             );
             alert("Confirm Registered Successfully.");
             console.log("Assessment result:", response.data);
-            deleteUser(user.id);
+            setUserData(userData.filter(u => u.id !== user.id));
             return response.data;
         } catch (error) {
             console.error("Error fetching assessment result:", error.message);
@@ -62,25 +70,48 @@ function DataTable() {
         }
     };
 
+
     const handleCheckAll = (event) => {
-        const isChecked = event.target.checked;
+        const isChecked = event.target.checked; //เป็น boolean ที่บอกว่า checkbox ถูกเลือก (checked) หรือไม่
         setAllChecked(isChecked);
-        setUserData(userData.map(user => ({ ...user, checked: isChecked })));
+        setUserData(userData.map(user => ({ ...user, checked: isChecked }))); //checked: isChecked เพิ่มหรืออัปเดต property checked ของ user ด้วยค่า isChecked
     };
 
+
     const handleCheck = (index) => {
+        //ใช้ spread operator (...) เพื่อคัดลอก array userData ทั้งหมดมาสร้างเป็น array ใหม่ updatedData
         const updatedData = [...userData];
-        updatedData[index].checked = !updatedData[index].checked;
+        updatedData[index].checked = !updatedData[index].checked; //ใช้ NOT operator (!) เพื่อสลับค่า boolean ของ checked
         setUserData(updatedData);
 
         const allChecked = updatedData.every(user => user.checked);
         setAllChecked(allChecked);
     };
 
+    //ใช้ในการอัปเดตค่า state ของ currentPage
+    const handlePageChange = (pageNumber) => { 
+        setCurrentPage(pageNumber); //เรียกฟังก์ชัน setCurrentPage เพื่ออัปเดตค่า currentPage ด้วยค่า pageNumber
+    };
+
+    //การคำนวณดัชนีของรายการสุดท้ายในหน้า
+    const indexOfLastItem = currentPage * itemsPerPage; //ถ้าหมายเลขหน้าปัจจุบันคือ 2 และจำนวนรายการต่อหน้าคือ 7 ดัชนีของรายการสุดท้ายในหน้าที่สองจะเป็น 2 * 7 = 14
+    
+    //การคำนวณดัชนีของรายการแรกในหน้า
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage; //ถ้าดัชนีของรายการสุดท้ายคือ 14 และจำนวนรายการต่อหน้าคือ 7 ดัชนีของรายการแรกจะเป็น 14 - 7 = 7
+    
+    //จากนั้นเลือกข้อมูลที่จะต้องแสดงในหน้าปัจจุบันโดยใช้เมธอด slice
+    const currentItems = userData.slice(indexOfFirstItem, indexOfLastItem); //slice เป็นเมธอดของอาร์เรย์ที่ใช้ในการเลือกส่วนหนึ่งของอาร์เรย์
+
+    const pageNumbers = [];
+    //เพื่อคำนวณจำนวนหน้าทั้งหมด โดยการหารจำนวนรายการทั้งหมด (userData.length) ด้วยจำนวนรายการต่อหน้า (itemsPerPage) แล้วปัดขึ้นให้เป็นจำนวนเต็ม
+    for (let i = 1; i <= Math.ceil(userData.length / itemsPerPage); i++) {
+        pageNumbers.push(i);
+    }
+
     return (
         <div className="container py-5">
             <Navbar />
-            <h4 className='mb-5'>Bootstrap Snippet for DataTable</h4>
+            <h4 className='mb-5 text-center'>Bootstrap Snippet for DataTable</h4>
             <div className="table-responsive text-center">
                 <table id="mytable" className="table table-custom table-striped">
                     <thead>
@@ -95,7 +126,6 @@ function DataTable() {
                                 />
                             </th>
                             <th>Name</th>
-                            {/* <th>Department</th> */}
                             <th>Faculty</th>
                             <th>Car Registor</th>
                             <th>Car Model</th>
@@ -104,29 +134,28 @@ function DataTable() {
                         </tr>
                     </thead>
                     <tbody>
-                        {userData.length > 0 ? (
-                            userData.map((user, index) => (
+                        {currentItems.length > 0 ? (
+                            currentItems.map((user, index) => (
                                 <tr key={index} className="rounded">
                                     <td>
                                         <input 
                                             type="checkbox" 
                                             className="checkthis rounded" 
                                             checked={user.checked || false}
-                                            onChange={() => handleCheck(index)}
+                                            onChange={() => handleCheck(indexOfFirstItem + index)}
                                         />
                                     </td>
                                     <td>{user.Name_Professor}</td>
-                                    {/* <td>{user.Department}</td> */}
                                     <td>{user.Faculty}</td>
                                     <td>{user.Car_Registor}</td>
                                     <td>{user.Car_model}</td>
                                     <td className='padding-left'>
-                                        <button className="btn btn-primary btn-xs rounded" data-title="Edit" data-toggle="modal" data-target="#edit" onClick={() => ConfirmUser(user.id)}>
+                                        <button className="btn btn-primary btn-xs rounded" onClick={() => ConfirmUser(user)} disabled={!user.checked}>
                                             <i className='bx bx-plus-circle'></i> <span className="glyphicon glyphicon-pencil"></span>
                                         </button>
                                     </td>
                                     <td>
-                                        <button className="btn btn-danger btn-xs rounded" data-title="Delete" data-toggle="modal" data-target="#delete" onClick={() => deleteUser(user.id)}>
+                                        <button className="btn btn-danger btn-xs rounded" onClick={deleteSelectedUsers} disabled={!user.checked}>
                                             <i className='bx bx-trash'></i> <span className="glyphicon glyphicon-pencil"></span>
                                         </button>
                                     </td>
@@ -134,7 +163,7 @@ function DataTable() {
                             ))
                         ) : (
                             <tr>
-                                <td colSpan="8" className="text-center">No data available</td>
+                                <td colSpan="7" className="text-center">No data available</td>
                             </tr>
                         )}
                     </tbody>
@@ -142,31 +171,14 @@ function DataTable() {
 
                 <div className="clearfix mt-5">
                     <ul className="pagination justify-content-end">
-                        <li className="page-item">
-                            <a className="page-link" href="#" tabIndex="-1" aria-disabled="true">
-                                <span className="bi bi-chevron-left">Previous</span>
-                            </a>
-                        </li>
-                        <li className="page-item active" aria-current="page">
-                            <a className="page-link" href="#">1</a>
-                        </li>
-                        <li className="page-item">
-                            <a className="page-link" href="#">2</a>
-                        </li>
-                        <li className="page-item">
-                            <a className="page-link" href="#">3</a>
-                        </li>
-                        <li className="page-item">
-                            <a className="page-link" href="#">4</a>
-                        </li>
-                        <li className="page-item">
-                            <a className="page-link" href="#">5</a>
-                        </li>
-                        <li className="page-item">
-                            <a className="page-link" href="#">
-                                <span className="bi bi-chevron-right">Next</span>
-                            </a>
-                        </li>
+                        {pageNumbers.map(number => (
+                            <li key={number} className={`page-item ${currentPage === number ? 'active' : ''}`}>
+                                {/* //เมื่อผู้ใช้คลิกที่หมายเลขหน้า a tag ฟังก์ชัน handlePageChange จะถูกเรียกใช้พร้อมกับหมายเลขหน้าที่ถูกคลิก number */}
+                                <a onClick={() => handlePageChange(number)} className="page-link cursor-pointer">
+                                    {number}
+                                </a>
+                            </li>
+                        ))}
                     </ul>
                 </div>
             </div>
