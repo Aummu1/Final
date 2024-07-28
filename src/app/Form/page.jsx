@@ -70,7 +70,6 @@ function DataTable() {
         }
     };
 
-
     const handleCheckAll = (event) => {
         const isChecked = event.target.checked; //เป็น boolean ที่บอกว่า checkbox ถูกเลือก (checked) หรือไม่
         setAllChecked(isChecked);

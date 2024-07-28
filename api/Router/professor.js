@@ -82,13 +82,12 @@ router_user.delete("/user/delete/:id", (req, res) => {
 // เส้นทาง POST ที่ /user/postconfirmdata เพื่อยืนยันและเพิ่มข้อมูลเข้าไปในตาราง professor และ car
 router_user.post("/user/postconfirmdata", async (req, res) => {
     let body = req.body;
-    console.log("Received body:", body); 
+    console.log("Received body:", body);
     try {
         const queryProfessor = 'INSERT INTO professor (Name_Professor, Faculty) VALUES (?, ?)';
         const queryCar = 'INSERT INTO car (Car_model, Car_owner, Car_registration) VALUES (?, ?, ?)';
-        const queryDeleteForm = 'DELETE FROM form WHERE id = ?';  // เพิ่มคำสั่ง SQL สำหรับลบข้อมูลจากตาราง form
+        const queryDeleteForm = 'DELETE FROM form WHERE id = ?';
 
-        // เพิ่มข้อมูลเข้าไปในตาราง professor
         db.query(queryProfessor, [body.name, body.faculty], (err, result) => {
             if (err) {
                 console.error("Error inserting data into MySQL database:", err);
@@ -96,7 +95,6 @@ router_user.post("/user/postconfirmdata", async (req, res) => {
                 return;
             }
 
-            // เพิ่มข้อมูลเข้าไปในตาราง car
             db.query(queryCar, [body.model, body.name, body.registration], (err, result) => {
                 if (err) {
                     console.error("Error inserting data into MySQL database:", err);
@@ -104,8 +102,7 @@ router_user.post("/user/postconfirmdata", async (req, res) => {
                     return;
                 }
 
-                // ลบข้อมูลจากตาราง form
-                db.query(queryDeleteForm, [body.id], (err, result) => {  // ใช้ body.id สำหรับลบข้อมูลจากตาราง form
+                db.query(queryDeleteForm, [body.id], (err, result) => {
                     if (err) {
                         console.error("Error deleting data from MySQL database:", err);
                         res.status(500).send("An error occurred while deleting data from the database");
