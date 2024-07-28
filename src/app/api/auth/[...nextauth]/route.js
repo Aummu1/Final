@@ -1,6 +1,5 @@
 import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
-import GitHubProvider from "next-auth/providers/github";
 
 export const authOptions = {
     providers: [
@@ -15,10 +14,6 @@ export const authOptions = {
             },
         },
     }),
-    // GitHubProvider({
-    //   clientId: process.env.GITHUB_ID,
-    //   clientSecret: process.env.GITHUB_SECRET,
-    // }),
   ],
   session: {
     strategy: "jwt",
@@ -31,27 +26,7 @@ export const authOptions = {
         const data = {
             email: profile.email,
         };
-        //CheckUserRegistration
-        // const response = await fetch(
-        //     "http://api.bd2-cloud.net/api/user/get-user",
-        //     {
-        //     method: "POST",
-        //     headers: {
-        //         "Content-Type": "application/json",
-        //     },
-        //     body: JSON.stringify(data),
-        // }
-        // );
-        // console.log("response => ", response);
-        // if (response.ok) {
-        //     const responseData = await response.json();
-        //     console.log("User is registered:", responseData);
-        //     return true;
-        // } else if (response.status === 404) {
-        //     return `/auth/register?email=${profile.email}&name=${profile.name}&imgurl=${profile.picture}`;
-        // } else {
-        //     console.error("Error checking registration:");
-        // }
+        
         }
     return true;
     },

@@ -10,6 +10,7 @@ function DataTable() {
     const [facultyReg, setFacultyReg] = useState('');
     const [modelReg, setModelReg] = useState('');
     const [registrationReg, setRegistrationReg] = useState('');
+    const [allChecked, setAllChecked] = useState(false);
 
     useEffect(() => {
         fetchUserData();
@@ -61,15 +62,38 @@ function DataTable() {
         }
     };
 
+    const handleCheckAll = (event) => {
+        const isChecked = event.target.checked;
+        setAllChecked(isChecked);
+        setUserData(userData.map(user => ({ ...user, checked: isChecked })));
+    };
+
+    const handleCheck = (index) => {
+        const updatedData = [...userData];
+        updatedData[index].checked = !updatedData[index].checked;
+        setUserData(updatedData);
+
+        const allChecked = updatedData.every(user => user.checked);
+        setAllChecked(allChecked);
+    };
+
     return (
         <div className="container py-5">
             <Navbar />
-            <h4>Bootstrap Snippet for DataTable</h4>
-            <div className="table-responsive">
-                <table id="mytable" className="table table-bordred table-striped border-black">
+            <h4 className='mb-5'>Bootstrap Snippet for DataTable</h4>
+            <div className="table-responsive text-center">
+                <table id="mytable" className="table table-custom table-striped">
                     <thead>
                         <tr>
-                            <th><input type="checkbox" id="checkall" /></th>
+                            <th>
+                                <input 
+                                    type="checkbox" 
+                                    id="checkall" 
+                                    checked={allChecked} 
+                                    onChange={handleCheckAll} 
+                                    className="rounded"
+                                />
+                            </th>
                             <th>Name</th>
                             {/* <th>Department</th> */}
                             <th>Faculty</th>
@@ -82,22 +106,29 @@ function DataTable() {
                     <tbody>
                         {userData.length > 0 ? (
                             userData.map((user, index) => (
-                                <tr key={index}>
-                                    <td><input type="checkbox" className="checkthis" /></td>
+                                <tr key={index} className="rounded">
+                                    <td>
+                                        <input 
+                                            type="checkbox" 
+                                            className="checkthis rounded" 
+                                            checked={user.checked || false}
+                                            onChange={() => handleCheck(index)}
+                                        />
+                                    </td>
                                     <td>{user.Name_Professor}</td>
                                     {/* <td>{user.Department}</td> */}
                                     <td>{user.Faculty}</td>
                                     <td>{user.Car_Registor}</td>
                                     <td>{user.Car_model}</td>
                                     <td className='padding-left'>
-                                        <button className="btn btn-primary btn-xs" data-title="Edit" data-toggle="modal" data-target="#edit">
-                                            <i className='bx bx-trash'></i> <span className="glyphicon glyphicon-pencil"></span>
+                                        <button className="btn btn-primary btn-xs rounded" data-title="Edit" data-toggle="modal" data-target="#edit" onClick={() => ConfirmUser(user.id)}>
+                                            <i className='bx bx-plus-circle'></i> <span className="glyphicon glyphicon-pencil"></span>
                                         </button>
                                     </td>
                                     <td>
-                                        <p data-placement="top" data-toggle="tooltip" title="Delete">
-                                            <button className="btn btn-danger btn-xs" data-title="Delete" data-toggle="modal" data-target="#delete" onClick={() => deleteUser(user.id)}><span className="glyphicon glyphicon-trash"></span></button>
-                                        </p>
+                                        <button className="btn btn-danger btn-xs rounded" data-title="Delete" data-toggle="modal" data-target="#delete" onClick={() => deleteUser(user.id)}>
+                                            <i className='bx bx-trash'></i> <span className="glyphicon glyphicon-pencil"></span>
+                                        </button>
                                     </td>
                                 </tr>
                             ))
@@ -108,16 +139,36 @@ function DataTable() {
                         )}
                     </tbody>
                 </table>
-                <div className="clearfix"></div>
-                <ul className="pagination pull-right">
-                    <li className="disabled"><a href="#"><span className="glyphicon glyphicon-chevron-left"></span></a></li>
-                    <li className="active"><a href="#">1</a></li>
-                    <li><a href="#">2</a></li>
-                    <li><a href="#">3</a></li>
-                    <li><a href="#">4</a></li>
-                    <li><a href="#">5</a></li>
-                    <li><a href="#"><span className="glyphicon glyphicon-chevron-right"></span></a></li>
-                </ul>
+
+                <div className="clearfix mt-5">
+                    <ul className="pagination justify-content-end">
+                        <li className="page-item">
+                            <a className="page-link" href="#" tabIndex="-1" aria-disabled="true">
+                                <span className="bi bi-chevron-left">Previous</span>
+                            </a>
+                        </li>
+                        <li className="page-item active" aria-current="page">
+                            <a className="page-link" href="#">1</a>
+                        </li>
+                        <li className="page-item">
+                            <a className="page-link" href="#">2</a>
+                        </li>
+                        <li className="page-item">
+                            <a className="page-link" href="#">3</a>
+                        </li>
+                        <li className="page-item">
+                            <a className="page-link" href="#">4</a>
+                        </li>
+                        <li className="page-item">
+                            <a className="page-link" href="#">5</a>
+                        </li>
+                        <li className="page-item">
+                            <a className="page-link" href="#">
+                                <span className="bi bi-chevron-right">Next</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
             </div>
         </div>
     );

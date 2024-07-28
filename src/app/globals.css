@@ -395,3 +395,62 @@ background: #eee;
         
     }
 }
+
+/* custom.css */
+.table-custom {
+    border-collapse: separate;
+    border-spacing: 0;
+    width: 100%;
+    border: 2px solid #dee2e6;
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.table-custom thead th {
+    background-color: #f8f9fa;
+}
+
+.table-custom thead th:first-child {
+    border-top-left-radius: 15px;
+}
+
+.table-custom thead th:last-child {
+    border-top-right-radius: 15px;
+}
+
+.table-custom tbody tr:last-child td:first-child {
+    border-bottom-left-radius: 15px;
+}
+
+.table-custom tbody tr:last-child td:last-child {
+    border-bottom-right-radius: 15px;
+}
+
+.table-custom th,
+.table-custom td {
+    border: 1px solid #dee2e6;
+    padding: 8px;
+}
+
+.table-custom tbody tr td:first-child {
+    border-left: 2px solid #dee2e6;
+}
+
+.table-custom tbody tr td:last-child {
+    border-right: 2px solid #dee2e6;
+}
+
+@media (min-width: 425px) {
+    .table-responsive {
+        margin-left: 5rem; /* กำหนด margin-left สำหรับหน้าจอขนาด 1024px ขึ้นไป */
+    }
+}
+
+@media (min-width: 320px) {
+    .table-responsive {
+        margin-left: 5rem; /* กำหนด margin-left สำหรับหน้าจอขนาด 1024px ขึ้นไป */
+    }
+    .clearfix{
+        margin-left: 9rem;
+    }
+}

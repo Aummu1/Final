@@ -82,7 +82,7 @@ router_user.delete("/user/delete/:id", (req, res) => {
 // เส้นทาง POST ที่ /user/postconfirmdata เพื่อยืนยันและเพิ่มข้อมูลเข้าไปในตาราง professor และ car
 router_user.post("/user/postconfirmdata", async (req, res) => {
     let body = req.body;
-    console.log(body)
+    console.log("Received body:", body); 
     try {
         const queryProfessor = 'INSERT INTO professor (Name_Professor, Faculty) VALUES (?, ?)';
         const queryCar = 'INSERT INTO car (Car_model, Car_registration) VALUES (?, ?)';
