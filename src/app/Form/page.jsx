@@ -1,19 +1,16 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import 'boxicons/css/boxicons.min.css';
 import axios from 'axios';
 import Navbar from "../components/Navbar";
 
-function Form() {
-    //ประกาศตัวแปรสถานะ userData เพื่อเก็บข้อมูลที่ได้รับจากเซิร์ฟเวอร์ โดยค่าเริ่มต้นเป็นอาเรย์ว่าง
+function DataTable() {
     const [userData, setUserData] = useState([]);
     const [nameReg, setNameReg] = useState('');
     const [facultyReg, setFacultyReg] = useState('');
     const [modelReg, setModelReg] = useState('');
     const [registrationReg, setRegistrationReg] = useState('');
 
-    //ใช้ useEffect เพื่อทำการเรียกข้อมูลจากเซิร์ฟเวอร์เมื่อคอมโพเนนต์นี้ถูก mount
     useEffect(() => {
         fetchUserData();
     }, []);
@@ -29,20 +26,16 @@ function Form() {
     };
 
     const deleteUser = async (id) => {
-        console.log("Deleting user with id:", id);// เพิ่มบรรทัดนี้เพื่อดีบั๊ก
         axios.delete(`http://localhost:2546/api/user/delete/${id}`)
-
-        //ใน .then เราจะอัปเดตสถานะ userData โดยกรองข้อมูลใน userData และเอาผู้ใช้ที่มี id ตรงกับค่าที่ส่งมาออกไป
-        .then(() => {
-            //setUserData(userData.filter(user => user.id !== id)) จะสร้างอาเรย์ใหม่ที่ไม่รวมผู้ใช้ที่ถูกลบ และอัปเดตสถานะ userData ด้วยอาเรย์ใหม่นี้
-            setUserData(userData.filter(user => user.id !== id));
-        })
-        .catch(error => {
-            console.error("Error deleting data:", error);
-        });
+            .then(() => {
+                setUserData(userData.filter(user => user.id !== id));
+            })
+            .catch(error => {
+                console.error("Error deleting data:", error);
+            });
     };
 
-    const ConfirmUser = async () => {
+    const ConfirmUser = async (user) => {
         try {
             const response = await axios.post(
                 "http://localhost:2546/api/user/postconfirmdata", 
@@ -60,11 +53,8 @@ function Form() {
             );
             alert("Confirm Registered Successfully.");
             console.log("Assessment result:", response.data);
-
-             // ลบผู้ใช้หลังจากยืนยันสำเร็จ
             deleteUser(user.id);
             return response.data;
-
         } catch (error) {
             console.error("Error fetching assessment result:", error.message);
             return null;
@@ -74,31 +64,63 @@ function Form() {
     return (
         <div className="container py-5">
             <Navbar />
-            <h3 className="text-center">Form</h3>
-            {userData.length > 0 ? (
-                userData.map((user, index) => (
-                    <div className="card-main mb-3" key={index}>
-                        <div className="card-body">
-                            <h5 className="card-title">User Information</h5>
-                            <p className="card-text mt-4 " value={nameReg}><strong>Name:</strong> {user.Name_Professor}</p>
-                            <p className="card-text"><strong>Department:</strong> {user.Department}</p>
-                            <p className="card-text"><strong>Faculty:</strong> {user.Faculty}</p>
-                            <p className="card-text"><strong>Car Register:</strong> {user.Car_Registor}</p>
-                            <p className="card-text mb-4"><strong>Car Model:</strong> {user.Car_model}</p>
-                        </div>
-                        <div className="d-flex justify-end gap-2">
-                            <button type="button" className="btn btn-danger btn-lg btn-block" onClick={() => deleteUser(user.id)}>Delete</button>
-                            <button type="button" className="btn btn-primary btn-lg btn-block" onClick={() => ConfirmUser(user)}>Confirm</button>
-                        </div>
-                    </div>
-                ))
-            ) : (
-                <div className="d-flex justify-content-center align-items-center" style={{ height: '80vh' }}>
-                    <h1>Coming Soon...</h1>
-                </div>
-            )}
+            <h4>Bootstrap Snippet for DataTable</h4>
+            <div className="table-responsive">
+                <table id="mytable" className="table table-bordred table-striped border-black">
+                    <thead>
+                        <tr>
+                            <th><input type="checkbox" id="checkall" /></th>
+                            <th>Name</th>
+                            {/* <th>Department</th> */}
+                            <th>Faculty</th>
+                            <th>Car Registor</th>
+                            <th>Car Model</th>
+                            <th>Confirm</th>
+                            <th>Delete</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {userData.length > 0 ? (
+                            userData.map((user, index) => (
+                                <tr key={index}>
+                                    <td><input type="checkbox" className="checkthis" /></td>
+                                    <td>{user.Name_Professor}</td>
+                                    {/* <td>{user.Department}</td> */}
+                                    <td>{user.Faculty}</td>
+                                    <td>{user.Car_Registor}</td>
+                                    <td>{user.Car_model}</td>
+                                    <td className='padding-left'>
+                                        <button className="btn btn-primary btn-xs" data-title="Edit" data-toggle="modal" data-target="#edit">
+                                            <i className='bx bx-trash'></i> <span className="glyphicon glyphicon-pencil"></span>
+                                        </button>
+                                    </td>
+                                    <td>
+                                        <p data-placement="top" data-toggle="tooltip" title="Delete">
+                                            <button className="btn btn-danger btn-xs" data-title="Delete" data-toggle="modal" data-target="#delete" onClick={() => deleteUser(user.id)}><span className="glyphicon glyphicon-trash"></span></button>
+                                        </p>
+                                    </td>
+                                </tr>
+                            ))
+                        ) : (
+                            <tr>
+                                <td colSpan="8" className="text-center">No data available</td>
+                            </tr>
+                        )}
+                    </tbody>
+                </table>
+                <div className="clearfix"></div>
+                <ul className="pagination pull-right">
+                    <li className="disabled"><a href="#"><span className="glyphicon glyphicon-chevron-left"></span></a></li>
+                    <li className="active"><a href="#">1</a></li>
+                    <li><a href="#">2</a></li>
+                    <li><a href="#">3</a></li>
+                    <li><a href="#">4</a></li>
+                    <li><a href="#">5</a></li>
+                    <li><a href="#"><span className="glyphicon glyphicon-chevron-right"></span></a></li>
+                </ul>
+            </div>
         </div>
     );
 }
 
-export default Form;
+export default DataTable;
