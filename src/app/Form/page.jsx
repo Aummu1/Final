@@ -10,6 +10,7 @@ function DataTable() {
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 7;
 
+    //ฟังก์ชัน useEffect เพื่อเรียกข้อมูลผู้ใช้จาก API
     useEffect(() => {
         fetchUserData();
     }, []);
@@ -24,6 +25,7 @@ function DataTable() {
             });
     };
 
+    //ฟังก์ชันลบผู้ใช้
     const deleteUser = async (userId) => {
         try {
             await axios.delete(`http://localhost:2546/api/user/delete/${userId}`);
@@ -33,7 +35,7 @@ function DataTable() {
         }
     };
 
-
+    //ฟังก์ชันลบผู้ใช้ที่ถูกเลือก
     const deleteSelectedUsers = async () => {
         const selectedUsers = userData.filter(user => user.checked); //user => user.checked เป็น callback function ที่ใช้กับ filter โดยจะทำการตรวจสอบว่า user.checked เป็น true หรือไม่
         //user => user.id เป็น callback function ที่ใช้กับ map โดยจะดึงค่า id ของแต่ละผู้ใช้ใน selectedUsers
@@ -48,10 +50,11 @@ function DataTable() {
         }
     };
 
+    //ฟังก์ชันยืนยันผู้ใช้
     const ConfirmUser = async (user) => {
         try {
             console.log("Confirming user:", user); // เพิ่มการ log ข้อมูล user ที่จะถูกยืนยัน
-            if (!user.id || !user.Name_Professor || !user.Faculty || !user.Car_model || !user.Car_Registor) {
+            if (!user.id || !user.Name_Professor || !user.Faculty || !user.Car_company || !user.Car_model || !user.Car_Registor) {
                 console.error("User data is incomplete:", user);
                 return;
             }
@@ -59,6 +62,7 @@ function DataTable() {
                 id: user.id,
                 name: user.Name_Professor, 
                 faculty: user.Faculty, 
+                company: user.Car_company,
                 model: user.Car_model, 
                 registration: user.Car_Registor 
             };
@@ -82,7 +86,7 @@ function DataTable() {
         }
     };
     
-
+    //ฟังก์ชันยืนยันผู้ใช้ที่ถูกเลือก
     const ConfirmSelectedUsers = async () => {
         const selectedUsers = userData.filter(user => user.checked);
 
@@ -93,6 +97,7 @@ function DataTable() {
                     id: user.id,
                     name: user.Name_Professor, 
                     faculty: user.Faculty, 
+                    company: user.Car_company,
                     model: user.Car_model, 
                     registration: user.Car_Registor 
                 },
@@ -109,6 +114,7 @@ function DataTable() {
         }
     };
 
+    //ฟังก์ชันจัดการการเลือกทั้งหมดและการเลือกแต่ละรายการ
     const handleCheckAll = (event) => {
         const isChecked = event.target.checked; //เป็น boolean ที่บอกว่า checkbox ถูกเลือก (checked) หรือไม่
         setAllChecked(isChecked);
@@ -166,6 +172,7 @@ function DataTable() {
                             <th>Name</th>
                             <th>Faculty</th>
                             <th>Car Registor</th>
+                            <th>Car company</th>
                             <th>Car Model</th>
                             <th>Confirm</th>
                             <th>Delete</th>
@@ -186,6 +193,7 @@ function DataTable() {
                                     <td>{user.Name_Professor}</td>
                                     <td>{user.Faculty}</td>
                                     <td>{user.Car_Registor}</td>
+                                    <td>{user.Car_company}</td>
                                     <td>{user.Car_model}</td>
                                     <td className='padding-left'>
                                         <button className="btn btn-primary btn-xs rounded" onClick={() => user.checked ? ConfirmSelectedUsers() : ConfirmUser(user)}>
@@ -201,7 +209,7 @@ function DataTable() {
                             ))
                         ) : (
                             <tr>
-                                <td colSpan="7" className="text-center">No data available</td>
+                                <td colSpan="8" className="text-center">No data available</td>
                             </tr>
                         )}
                     </tbody>
