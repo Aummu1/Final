@@ -24,6 +24,16 @@ function DataTable() {
             });
     };
 
+    const deleteUser = async (userId) => {
+        try {
+            await axios.delete(`http://localhost:2546/api/user/delete/${userId}`);
+            setUserData(userData.filter(user => user.id !== userId));
+        } catch (error) {
+            console.error("Error deleting data:", error);
+        }
+    };
+
+
     const deleteSelectedUsers = async () => {
         const selectedUsers = userData.filter(user => user.checked); //user => user.checked เป็น callback function ที่ใช้กับ filter โดยจะทำการตรวจสอบว่า user.checked เป็น true หรือไม่
         //user => user.id เป็น callback function ที่ใช้กับ map โดยจะดึงค่า id ของแต่ละผู้ใช้ใน selectedUsers
@@ -39,13 +49,45 @@ function DataTable() {
     };
 
     const ConfirmUser = async (user) => {
-        if (!user.checked) {
-            alert("Please check the checkbox before confirming.");
-            return;
+        try {
+            console.log("Confirming user:", user); // เพิ่มการ log ข้อมูล user ที่จะถูกยืนยัน
+            if (!user.id || !user.Name_Professor || !user.Faculty || !user.Car_model || !user.Car_Registor) {
+                console.error("User data is incomplete:", user);
+                return;
+            }
+            const payload = { 
+                id: user.id,
+                name: user.Name_Professor, 
+                faculty: user.Faculty, 
+                model: user.Car_model, 
+                registration: user.Car_Registor 
+            };
+            console.log("Payload to be sent:", payload); // เพิ่มการ log payload ที่จะถูกส่ง
+            const response = await axios.post(
+                "http://localhost:2546/api/user/postconfirmdata", 
+                payload,
+                {
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                }
+            );
+            alert("Confirm Registered Successfully.");
+            console.log("Assessment result:", response.data);
+            setUserData(userData.filter(u => u.id !== user.id));
+            return response.data;
+        } catch (error) {
+            console.error("Error confirming user:", error.response ? error.response.data : error.message); // เพิ่มการ log ข้อผิดพลาด
+            return null;
         }
+    };
+    
+
+    const ConfirmSelectedUsers = async () => {
+        const selectedUsers = userData.filter(user => user.checked);
 
         try {
-            const response = await axios.post(
+            await Promise.all(selectedUsers.map(user => axios.post(
                 "http://localhost:2546/api/user/postconfirmdata", 
                 { 
                     id: user.id,
@@ -59,14 +101,11 @@ function DataTable() {
                         "Content-Type": "application/json",
                     },
                 }
-            );
+            )));
             alert("Confirm Registered Successfully.");
-            console.log("Assessment result:", response.data);
-            setUserData(userData.filter(u => u.id !== user.id));
-            return response.data;
+            setUserData(userData.filter(user => !user.checked));
         } catch (error) {
-            console.error("Error fetching assessment result:", error.message);
-            return null;
+            console.error("Error confirming data:", error.message);
         }
     };
 
@@ -149,12 +188,12 @@ function DataTable() {
                                     <td>{user.Car_Registor}</td>
                                     <td>{user.Car_model}</td>
                                     <td className='padding-left'>
-                                        <button className="btn btn-primary btn-xs rounded" onClick={() => ConfirmUser(user)} disabled={!user.checked}>
+                                        <button className="btn btn-primary btn-xs rounded" onClick={() => user.checked ? ConfirmSelectedUsers() : ConfirmUser(user)}>
                                             <i className='bx bx-plus-circle'></i> <span className="glyphicon glyphicon-pencil"></span>
                                         </button>
                                     </td>
                                     <td>
-                                        <button className="btn btn-danger btn-xs rounded" onClick={deleteSelectedUsers} disabled={!user.checked}>
+                                        <button className="btn btn-danger btn-xs rounded" onClick={() => user.checked ? deleteSelectedUsers() : deleteUser(user.id)}>
                                             <i className='bx bx-trash'></i> <span className="glyphicon glyphicon-pencil"></span>
                                         </button>
                                     </td>

@@ -90,22 +90,23 @@ router_user.post("/user/postconfirmdata", async (req, res) => {
 
         db.query(queryProfessor, [body.name, body.faculty], (err, result) => {
             if (err) {
-                console.error("Error inserting data into MySQL database:", err);
-                res.status(500).send("An error occurred while inserting data into the database");
+                console.error("Error inserting data into professor table:", err);
+                console.log("Data to be inserted:", [body.name, body.faculty]); // เพิ่ม log ข้อมูลที่พยายามจะ insert
+                res.status(500).send("An error occurred while inserting data into the professor table");
                 return;
             }
 
             db.query(queryCar, [body.model, body.name, body.registration], (err, result) => {
                 if (err) {
-                    console.error("Error inserting data into MySQL database:", err);
-                    res.status(500).send("An error occurred while inserting data into the database");
+                    console.error("Error inserting data into car table:", err);
+                    res.status(500).send("An error occurred while inserting data into the car table");
                     return;
                 }
 
                 db.query(queryDeleteForm, [body.id], (err, result) => {
                     if (err) {
-                        console.error("Error deleting data from MySQL database:", err);
-                        res.status(500).send("An error occurred while deleting data from the database");
+                        console.error("Error deleting data from form table:", err);
+                        res.status(500).send("An error occurred while deleting data from the form table");
                         return;
                     }
                     console.log("Confirm Registered Successfully.");
@@ -119,7 +120,6 @@ router_user.post("/user/postconfirmdata", async (req, res) => {
         res.status(500).send("Error Registering User.");
     }
 });
-
 
 //ส่งออก Router เพื่อให้สามารถใช้ในไฟล์อื่นได้
 module.exports = router_user;
