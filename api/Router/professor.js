@@ -85,7 +85,7 @@ router_user.post("/user/postconfirmdata", async (req, res) => {
     console.log("Received body:", body);
     try {
         const queryProfessor = 'INSERT INTO professor (Name_Professor, Faculty) VALUES (?, ?)';
-        const queryCar = 'INSERT INTO car (Car_model, Car_owner, Car_registration) VALUES (?, ?, ?)';
+        const queryCar = 'INSERT INTO car (Car_company, Car_model, Car_owner, Car_registration) VALUES (?, ?, ?, ?)';
         const queryDeleteForm = 'DELETE FROM form WHERE id = ?';
 
         db.query(queryProfessor, [body.name, body.faculty], (err, result) => {
@@ -96,7 +96,7 @@ router_user.post("/user/postconfirmdata", async (req, res) => {
                 return;
             }
 
-            db.query(queryCar, [body.model, body.name, body.registration], (err, result) => {
+            db.query(queryCar, [body.company, body.model, body.name, body.registration], (err, result) => {
                 if (err) {
                     console.error("Error inserting data into car table:", err);
                     res.status(500).send("An error occurred while inserting data into the car table");
