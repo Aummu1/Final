@@ -1,19 +1,24 @@
 import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
+import GitHubProvider from "next-auth/providers/github";
 
 export const authOptions = {
-    providers: [
+  providers: [
     GoogleProvider({
-        clientId: process.env.GOOGLE_CLIENT_ID,
-        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-        authorization: {
+      clientId: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      authorization: {
         params: {
-            prompt: "consent",
-            access_type: "offline",
-            response_type: "code",
-            },
+          prompt: "consent",
+          access_type: "offline",
+          response_type: "code",
         },
+      },
     }),
+    // GitHubProvider({
+    //   clientId: process.env.GITHUB_ID,
+    //   clientSecret: process.env.GITHUB_SECRET,
+    // }),
   ],
   session: {
     strategy: "jwt",
@@ -24,13 +29,31 @@ export const authOptions = {
       if (account.provider === "google") {
         console.log("callback => ", profile);
         const data = {
-            email: profile.email,
+          email: profile.email,
         };
-        
+        //CheckUserRegistration
+        const response = await fetch(
+          "http://localhost:2546/api/user/check-email",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(data),
+          }
+        );
+        console.log("response => ", response);
+        console.log(response.status)
+        if (response.ok) {
+          return `/NewAdminLogin?email=${profile.email}&name=${profile.name}&imgurl=${profile.picture}`;
+        } else {
+          console.error("Error checking registration:");
+          return '/'
         }
-    return true;
+        return true;
+      }
     },
-},
+  },
 };
 
 const handler = NextAuth(authOptions);

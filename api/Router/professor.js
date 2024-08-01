@@ -33,8 +33,8 @@ router_user.post("/user/portdataform", async (req, res) => {
     let body = req.body;
     console.log(body)
     try {
-        const query = 'INSERT INTO form (Name_Professor,Faculty,Car_company,Car_model,Car_Registor) VALUES (?, ?, ?, ?, ?)';
-        db.query(query, [body.name, body.faculty, body.company, body.model, body.registration], (err, result) => {
+        const query = 'INSERT INTO form (Name_Professor,Faculty,Car_company,Car_model,Car_Registor) VALUES (? ,?, ?, ?, ?)';
+        db.query(query, [body.name, body.faculty,body.company,body.model, body.registration], (err, result) => {
             if (err) {
                 console.error("Error inserting data into MySQL database:", err);
                 res.status(500).send("An error occurred while inserting data into the database");

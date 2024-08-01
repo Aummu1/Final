@@ -52,7 +52,7 @@ function Navbar() {
                     </ul>
                     <ul className="menu-links p-0">
                         <li className="nav-link">
-                            <a href="UrlCamera">
+                            <a href="SettingPage">
                                 <i className='bx bxs-cog icon'></i> 
                                 <span className="text nav-text">Setting</span>
                             </a>

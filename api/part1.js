@@ -5,9 +5,10 @@ const mysql = require("mysql");
 const cors = require('cors');
 
 //นำเข้าและใช้ Router จากไฟล์ professor.js ซึ่งกำหนดเส้นทางที่ขึ้นต้นด้วย /api
+const api_admin = require("./Router/admin");
 const api_user = require("./Router/professor");
 app.use("/api", api_user);
-
+app.use("/api", api_admin);
 //ใช้ Middleware express.json() เพื่อแปลง JSON ที่เข้ามาในคำขอให้เป็น JavaScript object
 app.use(express.json())
 
@@ -28,13 +29,13 @@ const db = mysql.createConnection({
 });
 
 //เชื่อมต่อกับฐานข้อมูลและตรวจสอบความสำเร็จ
-db.connect(err => {
-    if (err) {
-        console.error("Error connecting to MySQL database:", err);
-    } else {
-        console.log("Connected to MySQL database");
-    }
-});
+// db.connect(err => {
+//     if (err) {
+//         console.error("Error connecting to MySQL database:", err);
+//     } else {
+//         console.log("Connected to MySQL database");
+//     }
+// });
 
 // เเส้นทาง GET ที่ root ซึ่งดึงข้อมูลจากตาราง admin ในฐานข้อมูลและส่งข้อมูลกลับไปยัง client
 // app.get('/', (req, res) => {
