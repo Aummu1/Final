@@ -49,24 +49,27 @@ router_user.post("/user/check-email", async (req, res) => {
         res.send("User Router").status(200);
     });
 
-    router_user.post("/user/saveAdmin", async (req, res) => {
+    router_user.post("/user/updateAdmin", async (req, res) => {
         let body = req.body;
         console.log(body);
         try {
-            const query = 'INSERT INTO admin (Username, Password) VALUES (?, ?)';
-            db.query(query, [body.username, body.password], (err, result) => {
+            const query = 'UPDATE admin SET Password = ? WHERE Username = ?';
+            db.query(query, [body.password, body.username], (err, result) => {
                 if (err) {
-                    console.error("Error inserting data into MySQL database:", err);
-                    res.status(500).send("An error occurred while inserting data into the database");
+                    console.error("Error updating data in MySQL database:", err);
+                    res.status(500).send("An error occurred while updating data in the database");
                     return;
                 }
-                console.log("User Registered Successfully.");
-                res.status(200).send("User Registered Successfully.");
+                console.log("User Updated Successfully.");
+                res.status(200).send("User Updated Successfully.");
             });
         } catch (error) {
-            console.error("Error Registering User.\n", error);
-            res.status(500).send("Error Registering User.");
+            console.error("Error Updating User.\n", error);
+            res.status(500).send("Error Updating User.");
         }
     });
+    
+
+    
     
 module.exports = router_user;

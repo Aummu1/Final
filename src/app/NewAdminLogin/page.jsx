@@ -30,7 +30,7 @@ function NewAdminLogin() {
     
         try {
             const response = await axios.post(
-                "http://localhost:2546/api/user/saveAdmin", 
+                "http://localhost:2546/api/user/updateAdmin", 
                 { 
                     username, 
                     password
@@ -46,7 +46,8 @@ function NewAdminLogin() {
                 alert("Admin Registered Successfully.");
                 console.log("Response:", response.data);
                 // ออกจากระบบและเปลี่ยนเส้นทางไปยังหน้าฟอร์ม
-                await signOut({ callbackUrl: "/AdminPage" });
+                window.location.href = "/";
+                return response.data;
             } else {
                 alert("Registration failed: " + response.data);
             }
