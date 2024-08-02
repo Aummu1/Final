@@ -13,10 +13,10 @@ function NewAdminLogin() {
 
     useEffect(() => {
         const searchParams = new URLSearchParams(window.location.search.split("?")[1]);
-        const email = searchParams.get("email");
+        const gmail = searchParams.get("email");
         const name = searchParams.get("name");
         const imgurl = searchParams.get("imgurl");
-        setUserData({ email, name, imgurl });
+        setUserData({ gmail, name, imgurl });
     }, []);
 
     console.log(UserData);
@@ -27,13 +27,19 @@ function NewAdminLogin() {
             alert("กรุณากรอกข้อมูลให้ครบทุกช่อง");
             return;
         }
-    
+        const mail = UserData.gmail
+        const img = UserData.imgurl
+        const name = UserData.name
+
         try {
             const response = await axios.post(
                 "http://localhost:2546/api/user/updateAdmin", 
                 { 
                     username, 
-                    password
+                    password,
+                    mail,
+                    img,
+                    name
                 },
                 {
                     headers: {
@@ -41,13 +47,14 @@ function NewAdminLogin() {
                     },
                 }
             );
-    
-            if (response.data === "User Registered Successfully.") {
+            console.log(response)
+            if (response.status == 200) {
                 alert("Admin Registered Successfully.");
                 console.log("Response:", response.data);
                 // ออกจากระบบและเปลี่ยนเส้นทางไปยังหน้าฟอร์ม
-                window.location.href = "/";
-                return response.data;
+                //window.location.href = "/";
+                // return response.data;
+                await signOut({ callbackUrl: "/" });
             } else {
                 alert("Registration failed: " + response.data);
             }

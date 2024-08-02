@@ -15,7 +15,7 @@ function Login() {
 
     const handleGoogle = async () => {
         try {
-            await signIn("google", { callbackUrl: "/" });
+            await signIn("google", { callbackUrl: "/AdminPage" });
         } catch (error) {
             console.log(error);
         }

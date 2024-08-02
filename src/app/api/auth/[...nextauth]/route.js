@@ -27,7 +27,7 @@ export const authOptions = {
   callbacks: {
     async signIn({ account, profile }) {
       if (account.provider === "google") {
-        console.log("callback => ", profile);
+        // console.log("callback => ", profile);
         const data = {
           email: profile.email,
         };
@@ -42,15 +42,18 @@ export const authOptions = {
             body: JSON.stringify(data),
           }
         );
-        console.log("response => ", response);
-        console.log(response.status)
+        // console.log("response => ", response);
+        const responseData = await response.json();
         if (response.ok) {
-          return `/NewAdminLogin?email=${profile.email}&name=${profile.name}&imgurl=${profile.picture}`;
+          if(responseData[0].Username == "none" || responseData[0].Password == null){
+              return `/NewAdminLogin?email=${profile.email}&name=${profile.name}&imgurl=${profile.picture}`;
+          }
+          else
+          return true;
         } else {
           console.error("Error checking registration:");
           return '/'
         }
-        return true;
       }
     },
   },
