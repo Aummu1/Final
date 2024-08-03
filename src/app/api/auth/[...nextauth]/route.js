@@ -48,8 +48,9 @@ export const authOptions = {
           if(responseData[0].Username == "none" || responseData[0].Password == null){
               return `/NewAdminLogin?email=${profile.email}&name=${profile.name}&imgurl=${profile.picture}`;
           }
-          else
-          return true;
+          else {
+            return true;
+        }
         } else {
           console.error("Error checking registration:");
           return '/'

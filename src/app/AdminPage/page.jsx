@@ -41,10 +41,10 @@ function AdminPage() {
         return (
             <div className="">
                 <div className="row">
-                    <div className={`col-${mode === 1 ? 2 : mode === 2 ? 1 : 2}`}>
+                    <div className={`col-${mode === 1 ? 1 : mode === 2 ? 1 : 2}`}>
                         <Navbar />
                     </div>
-                    <div className={`col-${mode === 1 ? 10 : mode === 2 ? 11 : 10}`}>
+                    <div className={`col-${mode === 1 ? 11 : mode === 2 ? 11 : 10}`}>
                         <Header />
                         <Dashboard />
                     </div>

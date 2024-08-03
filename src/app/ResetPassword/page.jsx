@@ -21,7 +21,7 @@ function ResetPassword() {
                         <form>
                             {/* Email input */}
                             <div className="form-floating mb-5">
-                                <input type="email" className="form-control" id="floatingInput" placeholder="name@example.com" />
+                                <input type="password" className="form-control" id="floatingInput" placeholder="name@example.com" />
                                 <label for="floatingInput">Old password</label>
                             </div>
                             {/* Password input */}
