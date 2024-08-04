@@ -19,7 +19,7 @@ function NewAdminLogin() {
         setUserData({ gmail, name, imgurl });
     }, []);
 
-    console.log(UserData);
+    // console.log(UserData);
 
     const register = async () => {
         if (!username || !password) {
@@ -50,7 +50,7 @@ function NewAdminLogin() {
             console.log(response)
             if (response.status == 200) {
                 alert("Admin Registered Successfully.");
-                console.log("Response:", response.data);
+                // console.log("Response:", response.data);
                 // ออกจากระบบและเปลี่ยนเส้นทางไปยังหน้าฟอร์ม
                 //window.location.href = "/";
                 // return response.data;

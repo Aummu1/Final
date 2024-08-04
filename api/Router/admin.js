@@ -30,17 +30,19 @@ db.connect(err => {
 
 router_user.post("/user/check-email", async (req, res) => {
     const body = req.body;
-    //console.log(body);
-    db.query(`SELECT * FROM admin WHERE Gmail = '${body.email}'`, (err, result) => {
+    console.log(body);
+    db.query(`SELECT * FROM admin WHERE Gmail = ?`, [body.email], (err, result) => {
         if (err) {
             console.error("Error fetching data from MySQL database:", err);
-            res.status(404).send("An error occurred while fetching data from the database");
+            return res.status(404).send("An error occurred while fetching data from the database");
         }
-        if(result.length > 0)
-            res.json(result).status(200);
-        else
-            res.status(404).json("Not Found");
-    })
+        if (result.length > 0) {
+            result[0].found = true;
+            res.status(200).json(result);
+        } else {
+            res.status(200).json([{ found: false }]);
+        }
+    });    
     });
     router_user.get("/user/get-all", async (req, res) => {});
     router_user.put("/user/update", async (req, res) => {});
@@ -52,10 +54,10 @@ router_user.post("/user/check-email", async (req, res) => {
         let body = req.body;
         console.log(body);
     
-        if (!body.username || !body.password) {
-            res.status(400).send("All fields are required: username, password");
-            return;
-        }
+        // if (!body.username || !body.password) {
+        //     res.status(400).send("All fields are required: username, password");
+        //     return;
+        // }
     
         try {
             const query = 'UPDATE admin SET Username = ?, Password = ?, Name_Admin = ?, Image = ? WHERE Gmail = ?';

@@ -12,7 +12,7 @@ import { useSession } from "next-auth/react";
 function AdminPage() {
     const [mode, setMode] = useState(0);
     const { data: session } = useSession();
-    console.log(session);
+    // console.log(session);
 
     useEffect(() => {
         const checkScreenWidth = () => {

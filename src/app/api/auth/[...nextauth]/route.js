@@ -1,6 +1,6 @@
 import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
-import GitHubProvider from "next-auth/providers/github";
+import axios from 'axios';
 
 export const authOptions = {
   providers: [
@@ -15,10 +15,7 @@ export const authOptions = {
         },
       },
     }),
-    // GitHubProvider({
-    //   clientId: process.env.GITHUB_ID,
-    //   clientSecret: process.env.GITHUB_SECRET,
-    // }),
+    
   ],
   session: {
     strategy: "jwt",
@@ -27,33 +24,34 @@ export const authOptions = {
   callbacks: {
     async signIn({ account, profile }) {
       if (account.provider === "google") {
-        // console.log("callback => ", profile);
+        console.log("callback => ", profile);
         const data = {
           email: profile.email,
         };
         //CheckUserRegistration
-        const response = await fetch(
+        const response = await axios.post(
           "http://localhost:2546/api/user/check-email",
+          data,
           {
-            method: "POST",
             headers: {
               "Content-Type": "application/json",
             },
-            body: JSON.stringify(data),
           }
         );
-        // console.log("response => ", response);
-        const responseData = await response.json();
-        if (response.ok) {
-          if(responseData[0].Username == "none" || responseData[0].Password == null){
-              return `/NewAdminLogin?email=${profile.email}&name=${profile.name}&imgurl=${profile.picture}`;
+        console.log("response => ", response.data);
+        console.log(response.status);
+        // const responseData = await response.json();
+        if(response.status == 200) {
+            if(!response.data[0].found){
+              return `/`
+            }
+            else if(response.data[0].Username == "none" || response.data[0].Password == null){
+              return `/NewAdminLogin?email=${encodeURIComponent(profile.email)}&name=${encodeURIComponent(profile.name)}&imgurl=${encodeURIComponent(profile.picture)}`;
+            }
+            else {
+              return true;
           }
-          else {
-            return true;
-        }
-        } else {
-          console.error("Error checking registration:");
-          return '/'
+          
         }
       }
     },
