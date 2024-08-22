@@ -8,6 +8,9 @@ import '../../app/script.js';
 import { Dice1 } from 'bootstrap-icons-react';
 
 function ResetPassword() {
+
+
+
     return (
         <div>
             <section className="vh-100">
@@ -20,10 +23,10 @@ function ResetPassword() {
                     <div className="col-md-7 col-lg-5 col-xl-5 offset-xl-1">
                         <form>
                             {/* Email input */}
-                            <div className="form-floating mb-5">
+                            {/* <div className="form-floating mb-5">
                                 <input type="password" className="form-control" id="floatingInput" placeholder="name@example.com" />
                                 <label for="floatingInput">Old password</label>
-                            </div>
+                            </div> */}
                             {/* Password input */}
                             <div className="form-floating mb-5">
                                 <input type="password" className="form-control" id="floatingPassword" placeholder="Password" />

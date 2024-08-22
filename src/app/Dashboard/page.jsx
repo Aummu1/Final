@@ -84,11 +84,15 @@ function Dashboard() {
 
             </section>
 
+            <section>
+
+            </section>
+
             <section className="row justify-around mb-10">
                 <div className="col-lg-6 col-md-12 mt-4">
                     <p>Camera 1 📷 </p>
-                    <img src="/image/c-test-1.png" className="card-img-top" alt="" />
-                </div>
+                    <img id="video_feed" src="http://172.23.225.171:5000/video_feed" alt="Video Feed" />
+                    </div>
 
                 <div className="col-lg-6 col-md-12 mt-4">
                     <p>Camera 2 📷</p>

@@ -1,11 +1,11 @@
 const express = require("express");
-const router_user = express.Router();
+const router_admin = express.Router();
 const mysql = require("mysql");
 const cors = require('cors');
 
-router_user.use(express.json())
+router_admin.use(express.json())
 
-router_user.use(
+router_admin.use(
     cors({
     origin: "http://localhost:3000",
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
@@ -28,7 +28,7 @@ db.connect(err => {
     }
 });
 
-router_user.post("/user/check-email", async (req, res) => {
+router_admin.post("/user/check-email", async (req, res) => {
     const body = req.body;
     console.log(body);
     db.query(`SELECT * FROM admin WHERE Gmail = ?`, [body.email], (err, result) => {
@@ -44,13 +44,13 @@ router_user.post("/user/check-email", async (req, res) => {
         }
     });    
     });
-    router_user.get("/user/get-all", async (req, res) => {});
-    router_user.put("/user/update", async (req, res) => {});
-    router_user.get("/user", (req, res) => {
+    router_admin.get("/user/get-all", async (req, res) => {});
+    router_admin.put("/user/update", async (req, res) => {});
+    router_admin.get("/user", (req, res) => {
         res.send("User Router").status(200);
     });
 
-    router_user.post("/user/updateAdmin", async (req, res) => {
+    router_admin.post("/user/updateAdmin", async (req, res) => {
         let body = req.body;
         console.log(body);
     
@@ -75,6 +75,36 @@ router_user.post("/user/check-email", async (req, res) => {
             res.status(500).send("Error Updating User.");
         }
     });
+
+    router_admin.post("/user/CheckAdminUser", async (req, res) => {
+        const body = req.body;
+        console.log("Received request body:", body); // ตรวจสอบข้อมูลที่ได้รับ
+        
+        if (!body.username || !body.password) {
+            return res.status(400).send("Username and password are required.");
+        }
+    
+        try {
+            const query = 'SELECT Username, Password FROM admin WHERE Username = ? AND Password = ?';
+            db.query(query, [body.username, body.password], (err, result) => {
+                if (err) {
+                    console.error("Error querying the database:", err);
+                    return res.status(500).send("An error occurred while querying the database");
+                }
+    
+                if (result.length > 0) {
+                    console.log("Admin user found.");
+                    res.status(200).send("Admin user found.");
+                } else {
+                    console.log("Admin user not found.");
+                    res.status(401).send("Admin user not found.");
+                }
+            });
+        } catch (error) {
+            console.error("Error checking admin user:", error);
+            res.status(500).send("Error checking admin user.");
+        }
+    });    
     
 
-module.exports = router_user;
+module.exports = router_admin;
