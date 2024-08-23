@@ -10,7 +10,7 @@ import { signOut } from "next-auth/react";
 
 function Navbar() {
     const { data: session } = useSession();
-    // console.log("Session",session);
+    console.log("Session",session);
 
     async function logout(){
         await signOut({ callbackUrl: "/" });

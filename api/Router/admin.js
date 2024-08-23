@@ -80,24 +80,20 @@ router_admin.post("/user/check-email", async (req, res) => {
         const body = req.body;
         console.log("Received request body:", body); // ตรวจสอบข้อมูลที่ได้รับ
         
-        if (!body.username || !body.password) {
-            return res.status(400).send("Username and password are required.");
-        }
-    
         try {
-            const query = 'SELECT Username, Password FROM admin WHERE Username = ? AND Password = ?';
+            const query = 'SELECT * FROM admin WHERE Username = ? AND Password = ?';
             db.query(query, [body.username, body.password], (err, result) => {
                 if (err) {
                     console.error("Error querying the database:", err);
                     return res.status(500).send("An error occurred while querying the database");
                 }
-    
+                //console.log(result)
                 if (result.length > 0) {
                     console.log("Admin user found.");
-                    res.status(200).send("Admin user found.");
+                    res.status(200).json(result);
                 } else {
                     console.log("Admin user not found.");
-                    res.status(401).send("Admin user not found.");
+                    res.status(404).json("Admin user not found.");
                 }
             });
         } catch (error) {

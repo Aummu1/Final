@@ -8,12 +8,18 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import React, { useState, useEffect } from 'react';
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 function AdminPage() {
+    const router = useRouter()
     const [mode, setMode] = useState(0);
     const { data: session } = useSession();
     // console.log(session);
-
+    if (!session) {
+        alert("Admin user found")
+        router.replace("/LoginPage");
+        return null;
+    }
     useEffect(() => {
         const checkScreenWidth = () => {
             const screenWidth = window.innerWidth;

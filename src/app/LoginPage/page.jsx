@@ -4,42 +4,32 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import 'boxicons/css/boxicons.min.css';
 import { signIn } from "next-auth/react";
 import React, { useState } from 'react';
+import { useRouter } from "next/navigation";
 import axios from 'axios'; 
 
 function Login() {
-
+    const router = useRouter()
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [rememberMe, setRememberMe] = useState(true);
 
-    const Signin = async () => {
-        try {
-            const response = await axios.post(
-                "http://localhost:2546/api/user/CheckAdminUser",
-                {   
-                    username, 
-                    password
-                }, 
-                {
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                }
-            );
-            if (response.status === 200) {
-                alert("Admin Registered Successfully.");
-                window.location.href = "/AdminPage";
-            } else {
-                alert("Authentication failed: " + response.data);
-            }
-        } catch (error) {
-            console.error("Error during authentication:", error.message);
-            alert("Authentication error: " + error.message);
-        }
-    };
-
     const handleRememberMeChange = () => {
         setRememberMe(!rememberMe);
+    }
+
+    const handleSignin = async () => {
+        console.log(username, password);
+    try {
+        await signIn("credentials", {
+            username, //Username to Login
+            password, //Password to Login
+            redirect: false, //Redirect true
+        });
+        router.replace("/AdminPage");
+        } 
+        catch (error) {
+        console.log(error);
+    }
     }
 
     const handleGoogle = async () => {
@@ -60,7 +50,7 @@ function Login() {
                     </div>
                     <div className="col-md-7 col-lg-5 col-xl-5 offset-xl-1">
                         <h3 className="d-flex justify-center mb-5 mt-5">Register for Admin</h3>
-                        <form onSubmit={Signin}>
+                        <form>
                             <div className="form-floating mb-5">
                                 <input 
                                     type="text" 
@@ -91,7 +81,7 @@ function Login() {
                                 <a href="#!">Forgot password?</a>
                             </div>
                             <div className="d-grid gap-2">
-                                <button type="submit" className="btn btn-primary btn-lg btn-block">Sign in</button>        
+                                <button type="button" className="btn btn-primary btn-lg btn-block" onClick={handleSignin}>Sign in</button>        
                             </div>
                             <div className="divider d-flex align-items-center my-4">
                                 <p className="text-center fw-bold mx-3 mb-0 text-muted">OR</p>
