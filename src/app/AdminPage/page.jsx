@@ -15,11 +15,11 @@ function AdminPage() {
     const [mode, setMode] = useState(0);
     const { data: session } = useSession();
     // console.log(session);
-    if (!session) {
-        alert("Admin user found")
-        router.replace("/LoginPage");
-        return null;
-    }
+    // if (!session) {
+    //     alert("Admin user found")
+    //     router.replace("/LoginPage");
+    //     return null;
+    // }
     useEffect(() => {
         const checkScreenWidth = () => {
             const screenWidth = window.innerWidth;

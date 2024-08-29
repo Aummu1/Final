@@ -84,14 +84,14 @@ router_user.post("/user/postconfirmdata", async (req, res) => {
     let body = req.body;
     console.log("Received body:", body);
     try {
-        const queryProfessor = 'INSERT INTO professor (Name_Professor, Faculty) VALUES (?, ?)';
+        const queryProfessor = 'INSERT INTO professor (Name_Professor, Faculty, Car_registration) VALUES (?, ?, ?)';
         const queryCar = 'INSERT INTO car (Car_company, Car_model, Car_owner, Car_registration) VALUES (?, ?, ?, ?)';
         const queryDeleteForm = 'DELETE FROM form WHERE id = ?';
 
-        db.query(queryProfessor, [body.name, body.faculty], (err, result) => {
+        db.query(queryProfessor, [body.name, body.faculty, body.registration], (err, result) => {
             if (err) {
                 console.error("Error inserting data into professor table:", err);
-                console.log("Data to be inserted:", [body.name, body.faculty]); // เพิ่ม log ข้อมูลที่พยายามจะ insert
+                console.log("Data to be inserted:", [body.name, body.faculty, body.registration]); // เพิ่ม log ข้อมูลที่พยายามจะ insert
                 res.status(500).send("An error occurred while inserting data into the professor table");
                 return;
             }

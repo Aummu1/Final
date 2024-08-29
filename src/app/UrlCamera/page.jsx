@@ -4,35 +4,41 @@ import React, { useState } from 'react';
 
 function UrlCamera() {
   const [url, setUrl] = useState('');
+  const [streamUrl, setStreamUrl] = useState('');
 
   const handleChange = (event) => {
     setUrl(event.target.value);
   };
 
-  const loadURL = () => {
-    document.getElementById('displayFrame').src = url;
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    setStreamUrl(`http://localhost:5000/video_feed?url=${encodeURIComponent(url)}`);
   };
 
   return (
-    <div className="container">
-      <h1>Load URL in iFrame</h1>
-      <input
-        type="text"
-        id="urlInput"
-        placeholder="Enter URL here"
-        value={url}
-        onChange={handleChange}
-        className="form-control"
-      />
-      <button onClick={loadURL} className="btn btn-primary mt-2">
-        Load
-      </button>
-      <iframe
-        id="displayFrame"
-        src=""
-        frameBorder="0"
-        style={{ width: '100%', height: '600px', marginTop: '20px' }}
-      ></iframe>
+    <div className="App">
+      <h1>RTSP Stream Viewer</h1>
+      <form onSubmit={handleSubmit} className="form-inline">
+        <input
+          type="text"
+          placeholder="Enter RTSP URL"
+          value={url}
+          onChange={handleChange}
+          className="form-control mr-2"
+          required
+        />
+        <button type="submit" className="btn btn-primary">
+          Load Stream
+        </button>
+      </form>
+      {streamUrl && (
+        <iframe
+          src={streamUrl}
+          title="RTSP Stream"
+          frameBorder="0"
+          style={{ width: '100%', height: '1000px', marginTop: '20px' }}
+        ></iframe>
+      )}
     </div>
   );
 }

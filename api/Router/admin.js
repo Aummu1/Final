@@ -90,10 +90,13 @@ router_admin.post("/user/check-email", async (req, res) => {
                 //console.log(result)
                 if (result.length > 0) {
                     console.log("Admin user found.");
-                    res.status(200).json(result);
+                    result[0].status = 200
+                    res.json(result);
                 } else {
                     console.log("Admin user not found.");
-                    res.status(404).json("Admin user not found.");
+                    res.json([{"data":"Admin user not found.",
+                        "status" : 404
+                    }]);
                 }
             });
         } catch (error) {

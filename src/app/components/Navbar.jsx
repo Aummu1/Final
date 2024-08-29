@@ -10,6 +10,7 @@ import { signOut } from "next-auth/react";
 
 function Navbar() {
     const { data: session } = useSession();
+    
     console.log("Session",session);
 
     async function logout(){
@@ -52,7 +53,7 @@ function Navbar() {
                     </ul>
                     <ul className="menu-links p-0">
                         <li className="nav-link">
-                            <a href="SettingPage">
+                            <a href="UrlCamera">
                                 <i className='bx bxs-cog icon'></i> 
                                 <span className="text nav-text">Setting</span>
                             </a>

@@ -19,17 +19,22 @@ function Login() {
 
     const handleSignin = async () => {
         console.log(username, password);
-    try {
-        await signIn("credentials", {
-            username, //Username to Login
-            password, //Password to Login
-            redirect: false, //Redirect true
-        });
-        router.replace("/AdminPage");
-        } 
-        catch (error) {
-        console.log(error);
-    }
+        try {
+            const result = await signIn("credentials", {
+            username,
+            password,
+            redirect: false,
+            });
+            
+            if (result.error || (result.status && result.status !== 200)) {
+            console.error(result.error || result.data[0].data);
+            alert(result.error || result.data[0].data);
+            } else {
+            router.replace("/AdminPage");
+            }
+        } catch (error) {
+            console.log(error);
+        }
     }
 
     const handleGoogle = async () => {

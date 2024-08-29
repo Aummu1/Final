@@ -3,6 +3,7 @@ import GoogleProvider from "next-auth/providers/google";
 import axios from 'axios';
 import CredentialsProvider from "next-auth/providers/credentials";
 import { useYScale } from "@mui/x-charts";
+import { red } from "@mui/material/colors";
 
 export const authOptions = {
 
@@ -26,30 +27,36 @@ export const authOptions = {
         if (!credentials.username || !credentials.password) {
           return null;
         }
-        const data = {
-          username: credentials.username,
-          password: credentials.password
-        };
-
-        const res = await axios.post(
-          "http://localhost:2546/api/user/CheckAdminUser",
-          data,
-          {
-            headers: {
-              "Content-Type": "application/json",
-            },
-          }
-        );
-        const user = res.data[0]
-        if (res.status == 200) {
-          if(res.data.length > 0)
+        try {
+          const data = {
+            username: credentials.username,
+            password: credentials.password,
+          };
+      
+          const res = await axios.post(
+            "http://localhost:2546/api/user/CheckAdminUser",
+            data,
+            {
+              headers: {
+                "Content-Type": "application/json",
+              },
+            }
+          );
+      
+          if (res.data[0].status === 200) {
+            const user = {
+              name: res.data[0].Name_Admin,
+              email: res.data[0].Gmail,
+              image: res.data[0].Image,
+            };
             return user;
-          else{
-            return null
+          } else {
+            console.error("Admin user not found.");
+            return null; // Return null when user is not found or status is not 200
           }
-        }else{
-          console.error("Failed to fetch user data.");
-          return null;
+        } catch (error) {
+          console.error("Authorization error:", error);
+          return null; // Return null on error
         }
       },
     }),
@@ -61,7 +68,8 @@ export const authOptions = {
   callbacks: {
     async signIn({ user, account, profile }) {
       if (account.provider === "google") {
-        console.log("callback => ", profile);
+        // console.log("callback => ", profile);
+        console.log("callback => ", user); // ดูข้อมูล user ที่มาจาก Google
         const data = {
           email: profile.email,
         };
@@ -94,15 +102,18 @@ export const authOptions = {
       }
       return true;
     },
-    async session({ session, token, user }) {
+
+    async session({ session, token }) {
+      console.log("Session Token:", token); // ตรวจสอบค่าของ token
+      
       if (token.provider === "google") {
         session.user.provider = "google";
       } else if (token.provider === "credentials") {
         session.user.provider = "credentials";
       }
-      session.user.image = token.image || token.user.Image;
-      session.user.name = token.name || token.user.Name_Admin;
-      session.user.email = token.gmail || token.user.Gmail;
+        session.user.image = token.picture || (token.user && token.user.image) || null;
+        session.user.name = token.name || (token.user && token.user.Name_Admin) || null;
+        session.user.email = token.email || (token.user && token.user.Gmail) || null;
 
       return session;
     },
@@ -110,15 +121,23 @@ export const authOptions = {
     async jwt({ token, user, account }) {
       if (account) {
         token.provider = account.provider; // Store the provider in the token
+
+        if (account.provider === "google" && user) {
+          token.email = user.email;  // ดึงข้อมูล email จาก user ที่ส่งมาจาก Google
+          token.image = user.image;  // ดึงรูปจาก user ที่ส่งมาจาก Google
+        }
       }
 
       if (user) {
-        token.user = user.response;
-        token.image = user.Image;
-        token.name = user.Name_Admin
-        token.gmail = user.Gmail
+        token.user = {
+          // id: user.id || null,
+          Name_Admin: user.Name_Admin || null,
+          Gmail: user.Gmail || null,
+          Image: user.Image || null, // เพิ่มการตรวจสอบที่นี่
+        };
       }
 
+      // console.log("Token content:", token); // ตรวจสอบค่าของ token
       return token;
     },
 

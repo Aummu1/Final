@@ -454,3 +454,24 @@ background: #eee;
         margin-left: 9rem;
     }
 }
+
+/* --------------------------------- */
+
+.App {
+    text-align: center;
+    padding: 20px;
+  }
+  
+  .form-inline {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+  }
+  
+  .form-control {
+    width: 300px;
+  }
+  
+  .btn {
+    margin-left: 10px;
+  }
