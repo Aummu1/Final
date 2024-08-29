@@ -460,18 +460,18 @@ background: #eee;
 .App {
     text-align: center;
     padding: 20px;
-  }
-  
-  .form-inline {
+}
+
+.form-inline {
     display: flex;
     justify-content: center;
     margin-bottom: 20px;
-  }
-  
-  .form-control {
+}
+
+.form-control {
     width: 300px;
-  }
-  
-  .btn {
+}
+
+.btn {
     margin-left: 10px;
-  }
+}

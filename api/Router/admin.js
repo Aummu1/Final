@@ -103,7 +103,48 @@ router_admin.post("/user/check-email", async (req, res) => {
             console.error("Error checking admin user:", error);
             res.status(500).send("Error checking admin user.");
         }
-    });    
+    }); 
+    
+    router_admin.post("/user/resetpassword", async (req, res) => {
+        let body = req.body;
+        console.log(body);
+    
+        try {
+            // ตรวจสอบว่าอีเมลที่ให้มามีอยู่ในระบบหรือไม่
+            const checkQuery = 'SELECT * FROM admin WHERE Gmail = ?';
+            db.query(checkQuery, [body.email], (err, result) => {
+                if (err) {
+                    console.error("Error checking email in MySQL database:", err);
+                    res.status(500).send({ success: false, message: "An error occurred while checking email in the database" });
+                    return;
+                }
+    
+                if (result.length === 0) {
+                    // อีเมลไม่พบในระบบ
+                    res.status(404).send({ success: false, message: "Email not found in the system" });
+                    return;
+                }
+    
+                // อีเมลพบในระบบ, อัปเดตรหัสผ่าน
+                const updateQuery = 'UPDATE admin SET Password = ? WHERE Gmail = ?';
+                db.query(updateQuery, [body.password, body.email], (err, result) => {
+                    if (err) {
+                        console.error("Error updating data in MySQL database:", err);
+                        res.status(500).send({ success: false, message: "An error occurred while updating data in the database" });
+                        return;
+                    }
+                    console.log("User Updated Successfully.");
+                    res.status(200).send({ success: true, message: "User Reset Password Successfully." });
+                });
+            });
+        } catch (error) {
+            console.error("Error Updating User.\n", error);
+            res.status(500).send({ success: false, message: "Error Updating User." });
+        }
+    });
+    
+    
+    
     
 
 module.exports = router_admin;
