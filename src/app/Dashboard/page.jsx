@@ -91,7 +91,7 @@ function Dashboard() {
             <section className="row justify-around mb-10">
                 <div className="col-lg-6 col-md-12 mt-4">
                     <p>Camera 1 📷 </p>
-                    <img id="video_feed" src="http://172.23.225.249:5000/video_feed" alt="Video Feed" />
+                    <img id="video_feed" src="http://192.168.1.108:5000/video_feed" alt="Video Feed" />
                     </div>
 
                 <div className="col-lg-6 col-md-12 mt-4">

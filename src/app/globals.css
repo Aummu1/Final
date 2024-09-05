@@ -475,3 +475,27 @@ background: #eee;
 .btn {
     margin-left: 10px;
 }
+
+/* UrlCamera.css */
+.video-container {
+    position: relative;
+    margin-top: 20px;
+}
+
+.iframe-stream {
+    width: 100%;
+    height: 100%;
+    display: block;
+    /* Ensure it occupies space properly */
+}
+
+#lineCanvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    cursor: crosshair;
+    pointer-events: auto;
+    z-index: 10;
+}
