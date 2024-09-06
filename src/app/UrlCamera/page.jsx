@@ -1,17 +1,13 @@
 'use client';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import React, { useState, useRef, useEffect } from 'react';
+import axios from 'axios';
 
 function UrlCamera() {
-  const [url, setUrl] = useState('rtsp://admin:Admin123456@192.168.1.105:554/cam/realmonitor?channel=1&subtype=0&unicast=true&proto=Onvif');
+  const [url, setUrl] = useState('');
   const [streamUrl, setStreamUrl] = useState('');
   const canvasRef = useRef(null);
-  const [dataJson, setDataJson] = useState({
-    dataX1: [],
-    dataY1: [],
-    dataX2: [],
-    dataY2: []
-  });
+  const [dataJson, setDataJson] = useState([]);
   const [drawing, setDrawing] = useState(false);
   const [startPos, setStartPos] = useState({ x: 0, y: 0 });
 
@@ -21,14 +17,19 @@ function UrlCamera() {
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    setStreamUrl(`http://localhost:5000/video_feed?url=${encodeURIComponent(url)}`);
+    // ตรวจสอบว่าค่า URL เป็นลิงก์ RTSP หรือไม่
+    if (url.startsWith('rtsp://')) {
+      setStreamUrl(`http://localhost:5000/video_feed?url=${encodeURIComponent(url)}`);
+    } else {
+      alert('Please enter a valid RTSP URL.');
+    }
   };
 
   const handleMouseDown = (event) => {
     const canvas = canvasRef.current;
     const rect = canvas.getBoundingClientRect();
-    const mouseX = event.clientX - rect.left;
-    const mouseY = event.clientY - rect.top;
+    const mouseX = Math.round(event.clientX - rect.left);
+    const mouseY = Math.round(event.clientY - rect.top);
 
     setStartPos({ x: mouseX, y: mouseY });
     setDrawing(true);
@@ -36,82 +37,116 @@ function UrlCamera() {
 
   const handleMouseMove = (event) => {
     if (!drawing) return;
-  
+
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
     const rect = canvas.getBoundingClientRect();
-    const mouseX = event.clientX - rect.left;
-    const mouseY = event.clientY - rect.top;
-  
-    // Draw the previous lines
+    const mouseX = Math.round(event.clientX - rect.left);
+    const mouseY = Math.round(event.clientY - rect.top);
+
+    // กำหนดขนาดของ canvas
+    canvas.width = canvas.clientWidth;
+    canvas.height = canvas.clientHeight;
+
+    // ล้าง canvas ก่อนวาด
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // วาดเส้นทั้งหมดที่มีอยู่
     ctx.beginPath();
-    ctx.strokeStyle = 'black'; // Line color
-    ctx.lineWidth = 2; // Line width
-    for (let i = 0; i < dataJson.dataX1.length; i++) {
-      ctx.moveTo(dataJson.dataX1[i], dataJson.dataY1[i]);
-      ctx.lineTo(dataJson.dataX2[i], dataJson.dataY2[i]);
+    ctx.strokeStyle = 'black'; // สีของเส้น
+    ctx.lineWidth = 2; // ความหนาของเส้น
+    for (const line of dataJson) {
+      const { dataX1, dataY1, dataX2, dataY2 } = line;
+      for (let i = 0; i < dataX1.length; i++) {
+        ctx.moveTo(dataX1[i], dataY1[i]);
+        ctx.lineTo(dataX2[i], dataY2[i]);
+      }
     }
     ctx.stroke();
     ctx.closePath();
-  
-    // Draw the current line
+
+    // วาดเส้นที่กำลังลาก
     ctx.beginPath();
     ctx.moveTo(startPos.x, startPos.y);
     ctx.lineTo(mouseX, mouseY);
     ctx.stroke();
     ctx.closePath();
   };
-  
+
   const handleMouseUp = (event) => {
     if (!drawing) return;
 
     const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
     const rect = canvas.getBoundingClientRect();
-    const mouseX = event.clientX - rect.left;
-    const mouseY = event.clientY - rect.top;
+    const mouseX = Math.round(event.clientX - rect.left);
+    const mouseY = Math.round(event.clientY - rect.top);
 
     setDrawing(false);
-    setDataJson((prevState) => ({
+
+    // เพิ่มเส้นใหม่ลงใน dataJson
+    setDataJson((prevState) => [
       ...prevState,
-      dataX1: [...prevState.dataX1, startPos.x],
-      dataY1: [...prevState.dataY1, startPos.y],
-      dataX2: [...prevState.dataX2, mouseX],
-      dataY2: [...prevState.dataY2, mouseY]
-    }));
+      {
+        dataX1: [startPos.x],
+        dataY1: [startPos.y],
+        dataX2: [mouseX],
+        dataY2: [mouseY]
+      }
+    ]);
   };
 
+  // ใช้ useEffect เพื่อวาดเส้นทั้งหมดใหม่เมื่อ dataJson เปลี่ยนแปลง
   useEffect(() => {
     const canvas = canvasRef.current;
-
-    const handleWheel = (event) => {
-      if (!drawing) {
-        return;
-      }
-      event.preventDefault();
-    };
-
-    if (canvas) {
-      canvas.addEventListener('wheel', handleWheel, { passive: false });
-    }
-
-    return () => {
-      if (canvas) {
-        canvas.removeEventListener('wheel', handleWheel);
-      }
-    };
-  }, [drawing]);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
     if (canvas) {
       canvas.width = canvas.clientWidth;
       canvas.height = canvas.clientHeight;
+      ctx.clearRect(0, 0, canvas.width, canvas.height); // ล้าง canvas
+
+      // วาดเส้นทั้งหมดที่เก็บไว้ใน dataJson
+      ctx.beginPath();
+      ctx.strokeStyle = 'black'; 
+      ctx.lineWidth = 2; 
+
+      for (const line of dataJson) {
+        const { dataX1, dataY1, dataX2, dataY2 } = line;
+        for (let i = 0; i < dataX1.length; i++) {
+          ctx.moveTo(dataX1[i], dataY1[i]);
+          ctx.lineTo(dataX2[i], dataY2[i]);
+        }
+      }
+      ctx.stroke();
+      ctx.closePath();
     }
-  }, [streamUrl]);
+  }, [dataJson]);
+
+  const handleSave = async () => {
+    try {
+      // สร้างอาร์เรย์ของเส้นเพื่อบันทึกแต่ละเส้น
+      const lines = dataJson.map(line => ({
+        x1: line.dataX1[0],
+        y1: line.dataY1[0],
+        x2: line.dataX2[0],
+        y2: line.dataY2[0]
+      }));
+
+      console.log('Sending lines:', lines); // ตรวจสอบข้อมูลที่ส่ง
+  
+      // ส่งข้อมูลไปยังเซิร์ฟเวอร์
+      await axios.post('http://localhost:2546/api/user/save-lines', { lines });
+  
+      alert('Lines saved successfully!');
+    } catch (error) {
+      console.error('Error saving lines:', error);
+      alert('Failed to save lines.');
+    }
+  };
 
   return (
     <div className="App">
-      <h1>RTSP Stream Viewer</h1>
+      <h1 className='mb-4 mt-3'>Insert link Camera</h1>
       <form onSubmit={handleSubmit} className="form-inline">
         <input
           type="text"
@@ -125,7 +160,7 @@ function UrlCamera() {
           Load Stream
         </button>
       </form>
-      
+
       <div className="video-container">
         <canvas
           ref={canvasRef}
@@ -134,7 +169,7 @@ function UrlCamera() {
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
         ></canvas>
-        
+
         {streamUrl && (
           <img
             src={streamUrl}
@@ -144,7 +179,11 @@ function UrlCamera() {
         )}
       </div>
 
-      <p>{JSON.stringify(dataJson)}</p>
+      <button onClick={handleSave} className="btn btn-success mt-4">
+        Save Lines
+      </button>
+
+      <p className='mt-4'>{JSON.stringify(dataJson)}</p>
     </div>
   );
 }

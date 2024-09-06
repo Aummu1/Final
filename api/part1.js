@@ -7,8 +7,11 @@ const cors = require('cors');
 //นำเข้าและใช้ Router จากไฟล์ professor.js ซึ่งกำหนดเส้นทางที่ขึ้นต้นด้วย /api
 const api_admin = require("./Router/admin");
 const api_user = require("./Router/professor");
+const api_camera = require("./Router/camera");
+
 app.use("/api", api_user);
 app.use("/api", api_admin);
+app.use("/api", api_camera);
 //ใช้ Middleware express.json() เพื่อแปลง JSON ที่เข้ามาในคำขอให้เป็น JavaScript object
 app.use(express.json())
 

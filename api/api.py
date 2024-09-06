@@ -6,7 +6,7 @@ app = Flask(__name__)
 frame2 = 0
 
 def gen_frames():
-    vdo = cv2.VideoCapture('rtsp://admin:Admin123456@192.168.1.105:554/cam/realmonitor?channel=1&subtype=0&unicast=true&proto=Onvif')
+    vdo = cv2.VideoCapture('rtsp://admin:Admin123456@192.168.1.104:554/cam/realmonitor?channel=1&subtype=0&unicast=true&proto=Onvif')
     ret, pic = vdo.read()
     while True:
         ret, frame = vdo.read()
