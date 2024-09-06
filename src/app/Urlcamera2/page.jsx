@@ -139,7 +139,7 @@ function UrlCamera() {
 
     return (
         <div className="App">
-            <h1 className='mb-4 mt-3'>Insert link Camera</h1>
+            <h1 className='mb-4 mt-3'>Insert link Camera 2</h1>
             <form onSubmit={handleSubmit} className="form-inline">
                 <input
                     type="text"
@@ -176,7 +176,7 @@ function UrlCamera() {
                 Save Lines
             </button>
 
-            <a href="Urlcamera2" className={`btn btn-info mt-4 ${!saved ? 'disabled' : ''}`}>
+            <a href="SettingPage" className={`btn btn-info mt-4 ${!saved ? 'disabled' : ''}`}>
                 <span className="text nav-text">Next</span>
             </a>
 

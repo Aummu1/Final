@@ -30,47 +30,43 @@ db.connect(err => {
     }
 });
 
-router_camera.post('/user/save-lines', (req, res) => {
-    const lines = req.body.lines;
+router_camera.post('/user/save-data', (req, res) => {
+    const { url, lines } = req.body;
 
-    if (lines.length > 0) {
-      // ตัวแปรเพื่อเก็บข้อมูลของแต่ละเส้น
-        let Line1 = null;
-        let Line2 = null;
-        let Black = null;
-    
-        // จัดการข้อมูลเส้น
-        lines.forEach((line, index) => {
-            if (index === 0) {
-            // เส้นที่ 1
+    if (!url || lines.length === 0) {
+        return res.status(400).send('RTSP URL and lines data are required');
+    }
+
+    let Line1 = null;
+    let Line2 = null;
+    let Black = null;
+
+    lines.forEach((line, index) => {
+        if (index === 0) {
             Line1 = JSON.stringify([line.x1, line.y1, line.x2, line.y2]);
-            } else if (index === 1) {
-            // เส้นที่ 2
+        } else if (index === 1) {
             Line2 = JSON.stringify([line.x1, line.y1, line.x2, line.y2]);
-            } else if (index === 2) {
-            // เส้นที่ 3
+        } else if (index === 2) {
             Black = line.x1;
-            }
-        });
-    
-        // ตรวจสอบค่า
-        console.log('Line1:', Line1);
-        console.log('Line2:', Line2);
-        console.log('Black:', Black);
-    
-        // สร้างคำสั่ง SQL เพื่อบันทึกข้อมูล
-        const query = 'INSERT INTO camera (Line1, Line2, Black) VALUES (?, ?, ?)';
-            db.query(query, [Line1, Line2, Black], (err, result) => {
-            if (err) {
-                console.error('Error saving lines:', err);
-                return res.status(500).send('Error saving lines');
-            }
-            res.status(200).send('Lines saved successfully');
-            });
-        } else {
-        res.status(400).send('No lines data provided');
         }
     });
+
+    console.log('RTSP URL:', url);
+    console.log('Line1:', Line1);
+    console.log('Line2:', Line2);
+    console.log('Black:', Black);
+
+    const query = 'INSERT INTO camera (rtsp, Line1, Line2, Black) VALUES (?, ?, ?, ?)';
+    db.query(query, [url, Line1, Line2, Black], (err, result) => {
+        if (err) {
+            console.error('Error saving data:', err);
+            return res.status(500).send('Error saving data');
+        }
+        res.status(200).send('Data saved successfully');
+    });
+});
+
+    
     
 
 module.exports = router_camera;
