@@ -83,6 +83,7 @@ router_camera.post('/user/settingtime', (req, res) => {
             return res.status(500).send('Error fetching SettingTime');
         }
         res.status(200).send(result[0]); 
+    });
 });
 
 module.exports = router_camera;
