@@ -11,7 +11,6 @@ function UrlCamera() {
     const [dataJson, setDataJson] = useState([]);
     const [drawing, setDrawing] = useState(false);
     const [startPos, setStartPos] = useState({ x: 0, y: 0 });
-    const [saved, setSaved] = useState(false); // สร้าง state สำหรับบันทึกข้อมูล
 
     const handleChange = (event) => {
         setUrl(event.target.value);
@@ -118,6 +117,11 @@ function UrlCamera() {
 
     const handleSave = async () => {
         try {
+            // ดึงข้อมูล ParkingLot_ID ล่าสุด
+            const parkingLotResponse = await axios.get('http://localhost:2546/api/user/getParkingLotID');
+            const parkingLotID = parkingLotResponse.data.ParkingLot_ID;
+    
+            // บันทึกข้อมูล RTSP URL และเส้นที่วาดพร้อม ParkingLot_ID
             await axios.post('http://localhost:2546/api/user/save-data', {
                 url,
                 lines: dataJson.map(line => ({
@@ -125,12 +129,12 @@ function UrlCamera() {
                     y1: line.dataY1[0],
                     x2: line.dataX2[0],
                     y2: line.dataY2[0]
-                }))
+                })),
+                parkingLotID // ส่งค่า ParkingLot_ID ไปพร้อมกับข้อมูลที่บันทึก
             });
-
+    
             alert('Lines and RTSP URL saved successfully!');
-            setSaved(true); // ตั้งค่า state ว่าข้อมูลถูกบันทึกแล้ว
-
+    
         } catch (error) {
             console.error('Error saving data:', error);
             alert('Failed to save data.');
@@ -139,7 +143,7 @@ function UrlCamera() {
 
     return (
         <div className="App">
-            <h1 className='mb-4 mt-3'>Insert link Camera 2</h1>
+            <h1 className='mb-4 mt-3'>Camera for detect license plates</h1>
             <form onSubmit={handleSubmit} className="form-inline">
                 <input
                     type="text"
@@ -173,12 +177,8 @@ function UrlCamera() {
             </div>
 
             <button onClick={handleSave} className="btn btn-success mt-4">
-                Save Lines
+                <a href="AdminPage">Save Lines</a>
             </button>
-
-            <a href="SettingPage" className={`btn btn-info mt-4 ${!saved ? 'disabled' : ''}`}>
-                <span className="text nav-text">Next</span>
-            </a>
 
             <p className='mt-4'>{JSON.stringify(dataJson)}</p>
         </div>

@@ -53,7 +53,7 @@ function Navbar() {
                     </ul>
                     <ul className="menu-links p-0">
                         <li className="nav-link">
-                            <a href="UrlCamera">
+                            <a href="SettingPage">
                                 <i className='bx bxs-cog icon'></i> 
                                 <span className="text nav-text">Setting</span>
                             </a>
@@ -72,6 +72,22 @@ function Navbar() {
                             <a href="Form">
                                 <i className='bx bxs-message-dots icon'></i>
                                 <span className="text nav-text">Form</span>
+                            </a>
+                        </li>
+                    </ul>
+                    <ul className="menu-links p-0">
+                        <li className="nav-link">
+                            <a href="Infor_ParkingLot">
+                            <i class='bx bxs-data icon'></i>
+                                <span className="text nav-text">Information</span>
+                            </a>
+                        </li>
+                    </ul>
+                    <ul className="menu-links p-0">
+                        <li className="nav-link">
+                            <a href="Time">
+                            <i class='bx bxs-time-five icon'></i>
+                                <span className="text nav-text">Time</span>
                             </a>
                         </li>
                     </ul>

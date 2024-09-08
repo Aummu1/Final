@@ -118,6 +118,11 @@ function UrlCamera() {
 
     const handleSave = async () => {
         try {
+            // ดึงข้อมูล ParkingLot_ID ล่าสุด
+            const parkingLotResponse = await axios.get('http://localhost:2546/api/user/getParkingLotID');
+            const parkingLotID = parkingLotResponse.data.ParkingLot_ID;
+    
+            // บันทึกข้อมูล RTSP URL และเส้นที่วาดพร้อม ParkingLot_ID
             await axios.post('http://localhost:2546/api/user/save-data', {
                 url,
                 lines: dataJson.map(line => ({
@@ -125,12 +130,13 @@ function UrlCamera() {
                     y1: line.dataY1[0],
                     x2: line.dataX2[0],
                     y2: line.dataY2[0]
-                }))
+                })),
+                parkingLotID // ส่งค่า ParkingLot_ID ไปพร้อมกับข้อมูลที่บันทึก
             });
-
+    
             alert('Lines and RTSP URL saved successfully!');
             setSaved(true); // ตั้งค่า state ว่าข้อมูลถูกบันทึกแล้ว
-
+    
         } catch (error) {
             console.error('Error saving data:', error);
             alert('Failed to save data.');
@@ -139,7 +145,7 @@ function UrlCamera() {
 
     return (
         <div className="App">
-            <h1 className='mb-4 mt-3'>Insert link Camera</h1>
+            <h1 className='mb-4 mt-3'>Camera for detect license plates</h1>
             <form onSubmit={handleSubmit} className="form-inline">
                 <input
                     type="text"

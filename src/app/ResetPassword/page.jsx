@@ -5,6 +5,8 @@ import axios from 'axios';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'boxicons/css/boxicons.min.css';
 import { signOut } from 'next-auth/react';
+import Footer from '../components/Footer';
+import Navbar from '../components/Navbar';
 
 function ResetPassword() {
     const [password, setPassword] = useState("");
@@ -37,6 +39,7 @@ function ResetPassword() {
 
     return (
         <div>
+            <Navbar />
             <section className="vh-100">
                 <div className="container py-5 h-100">
                     <div className="row d-flex align-items-center justify-content-center h-100">
@@ -46,6 +49,7 @@ function ResetPassword() {
                         </div>
                         <div className="col-md-7 col-lg-5 col-xl-5 offset-xl-1">
                             <form onSubmit={register}>
+                                <h2 className='d-flex justify-center mb-5'>Reset Password</h2>
                                 <div className="form-floating mb-5">
                                     <input 
                                         type="email" 
@@ -78,6 +82,7 @@ function ResetPassword() {
                     </div>
                 </div>
             </section>
+            <Footer />  
         </div>
     );
 }

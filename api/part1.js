@@ -8,10 +8,12 @@ const cors = require('cors');
 const api_admin = require("./Router/admin");
 const api_user = require("./Router/professor");
 const api_camera = require("./Router/camera");
+const api_parkinglot = require("./Router/parkinglot");
 
 app.use("/api", api_user);
 app.use("/api", api_admin);
 app.use("/api", api_camera);
+app.use("/api", api_parkinglot);
 //ใช้ Middleware express.json() เพื่อแปลง JSON ที่เข้ามาในคำขอให้เป็น JavaScript object
 app.use(express.json())
 

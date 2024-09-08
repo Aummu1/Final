@@ -1,70 +1,84 @@
 "use client";
+import React, { useState } from 'react';
 import Link from "next/link";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'boxicons/css/boxicons.min.css';
+import axios from 'axios'; // ใช้ Axios สำหรับ HTTP requests
 
 function SettingCode() {
+    const [parkingLotName, setParkingLotName] = useState('');
+    const [wifi, setWifi] = useState('');
+    const [wifiPassword, setWifiPassword] = useState('');
+    const [saved, setSaved] = useState(false); // สถานะที่ใช้ตรวจสอบว่าข้อมูลถูกบันทึกสำเร็จหรือไม่
+
+    const handleSubmit = async (event) => {
+        event.preventDefault();
+        try {
+            const response = await axios.post('http://localhost:2546/api/user/saveParkingLot', {
+                parkingLotName,
+                wifi,
+                wifiPassword
+            });
+            if (response.status === 200) {
+                alert('Data saved successfully!');
+                setSaved(true); // อัปเดตสถานะเมื่อบันทึกข้อมูลสำเร็จ
+            }
+        } catch (error) {
+            console.error('Error saving data:', error);
+            alert('Failed to save data.');
+            setSaved(false); // หากเกิดข้อผิดพลาดสถานะจะไม่ถูกตั้งค่า
+        }
+    };
 
     return (
         <div className='ml-5'>
             <section className="contact" id="contact">
-                <h2 className="heading">ข้อมูลลานจอดรถ</h2>
+                <h2 className="heading">ParkingLot Information</h2>
 
-                <form action="">
+                <form onSubmit={handleSubmit}>
                     <div className="input-box">
-                        <p>ไอดี</p>
-                        <input type="text" name="name" placeholder="ID" required />
-                        <p>ชื่อลานจอดรถ</p>
-                        <input type="text" placeholder="ชื่อลานจอดรถ" required />
+                        <p>Name ParkingLot</p>
+                        <input
+                            type="text"
+                            placeholder="Name ParkingLot"
+                            required
+                            value={parkingLotName}
+                            onChange={(e) => setParkingLotName(e.target.value)}
+                        />
                     </div>
                 </form>
             </section>
 
             <section className="contact" id="contact">
-                <h2 className="heading">ข้อมูลช่องจอดรถ</h2>
-                <form action="">
+                <h2 className="heading">LED Information</h2>
+                <form onSubmit={handleSubmit}>
                     <div className="input-box">
-                        <p>ไอดี</p>
-                        <input type="text" name="name" placeholder="ID" required />
-                        <div className="bg-danger d-flex justify-content-center align-items-center w-12 h-12 rounded-circle m-auto mt-5">
-                            <Link href="#"><img src="/image/delete.png" className='p-3' alt="" /></Link>
-                        </div>
-                        <div className="bg-primary d-flex justify-content-center align-items-center w-12 h-12 rounded-circle m-auto mt-5">
-                            <Link href="#"><img src="/image/+.png" className='p-3' alt="" /></Link>
-                        </div>
+                        <p>Wifi</p>
+                        <input
+                            className="mb-5"
+                            type="text"
+                            placeholder="Wifi"
+                            required
+                            value={wifi}
+                            onChange={(e) => setWifi(e.target.value)}
+                        />
+                        <p>Wifi Password</p>
+                        <input
+                            type="text"
+                            placeholder="Wifi Password"
+                            required
+                            value={wifiPassword}
+                            onChange={(e) => setWifiPassword(e.target.value)}
+                        />
                     </div>
+                    {/* ปุ่มส่งข้อมูล */}
+                    <button type="submit" className="btn btn-primary mt-3">Submit</button>
+
+                    {/* ปุ่ม Next ที่ปิดใช้งานถ้าข้อมูลยังไม่ถูกบันทึก */}
+                    <a href="UrlCamera" className={`btn btn-info mt-3 ${!saved ? 'disabled' : ''}`}>
+                        <span className="text nav-text">Next</span>
+                    </a>
                 </form>
-                
-            </section>
-
-            <section className="contact" id="contact">
-                <h2 className="heading">ข้อมูลกล้อง</h2>
-
-                <form action="">
-                    <div className="input-box">
-                        <p>ไอดี</p>
-                        <input type="text" name="name" placeholder="ID" required />
-                        <p>หน้าที่ของกล้อง</p>
-                        <select className="form-select" aria-label="Default select example" style={{ background: '#f6f6f6', borderRadius: '0.5rem', padding:'1.5rem' }}>
-                            <option selected>เลือกเมนูนี้</option>
-                            <option style={{ background: '#f6f6f6', borderRadius: '0.5rem' }} value="1">ตรวจจับช่องจอดรถ</option>
-                            <option style={{ background: '#f6f6f6', borderRadius: '0.5rem' }} value="2">ตรวจจับทะเบียนรถ</option>
-                        </select>
-                    </div>
-                </form>
-
-                <form action="">
-                    <div className="input-box">
-                        <p>ไอดี</p>
-                        <input type="text" name="name" placeholder="ID" required />
-                        <p>หน้าที่ของกล้อง</p>
-                        <select className="form-select" aria-label="Default select example" style={{ background: '#f6f6f6', borderRadius: '0.5rem', padding:'1.5rem' }}>
-                            <option selected>เลือกเมนูนี้</option>
-                            <option style={{ background: '#f6f6f6', borderRadius: '0.5rem' }} value="1">ตรวจจับช่องจอดรถ</option>
-                            <option style={{ background: '#f6f6f6', borderRadius: '0.5rem' }} value="2">ตรวจจับทะเบียนรถ</option>
-                        </select>
-                    </div>
-                </form>                
             </section>
         </div>
     );
