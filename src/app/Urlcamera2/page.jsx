@@ -8,8 +8,6 @@ function UrlCamera() {
     const [url, setUrl] = useState('');
     const [streamUrl, setStreamUrl] = useState('');
     const canvasRef = useRef(null);
-    const [dataJson, setDataJson] = useState([]);
-    const [drawing, setDrawing] = useState(false);
     const [points, setPoints] = useState([]);
     const [shapes, setShapes] = useState([]);
 
@@ -19,10 +17,27 @@ function UrlCamera() {
         setUrl(event.target.value);
     };
 
-    const handleSubmit = (event) => {
+    const handleStreamLoad = async (event) => {
         event.preventDefault();
         if (url.startsWith('rtsp://')) {
             setStreamUrl(`http://localhost:5000/video_feed?url=${encodeURIComponent(url)}`);
+            
+            // Save camera data here
+            try {
+                const parkingLotResponse = await axios.get('http://localhost:2546/api/user/getParkingLotID');
+                const parkingLotID = parkingLotResponse.data.ParkingLot_ID;
+                
+                const cameraFunctions = 'Detect space';
+                await axios.post('http://localhost:2546/api/user/save-camera', {
+                    url,
+                    parkingLotID,
+                    cameraFunctions
+                });
+                
+            } catch (error) {
+                console.error('Error saving camera data:', error);
+                alert('Failed to save camera data.');
+            }
         } else {
             alert('Please enter a valid RTSP URL.');
         }
@@ -87,10 +102,9 @@ function UrlCamera() {
     
             for (const shape of shapes) {
                 const pointsToSave = shape.map(point => ({ x: point.x, y: point.y }));
-                await axios.post('http://localhost:2546/api/user/save-index', {
+                await axios.post('http://localhost:2546/api/user/save-parkingspace', {
                     points: pointsToSave,
-                    parkingLotID,
-                    url
+                    parkingLotID
                 });
             }
     
@@ -101,14 +115,12 @@ function UrlCamera() {
             alert('Failed to save data.');
         }
     };    
-    
 
     return (
         <div className="App">
             <h1 className='mb-4 mt-3'>Camera for detect space</h1>
-            <p>rtsp://admin:Admin123456@192.168.1.100:554/cam/realmonitor?channel=1&subtype=0&unicast=true&proto=Onvif
-            </p>
-            <form onSubmit={handleSubmit} className="form-inline">
+            <p>rtsp://admin:Admin123456@192.168.1.104:554/cam/realmonitor?channel=1&subtype=0&unicast=true&proto=Onvif</p>
+            <form onSubmit={handleStreamLoad} className="form-inline">
                 <input
                     type="text"
                     placeholder="Enter RTSP URL"
@@ -139,7 +151,7 @@ function UrlCamera() {
             </div>
     
             <button onClick={handleSave} className="btn btn-success mt-4">
-                <a className='text-decoration-none text-white' href="AdminPage">Save Lines</a>
+                Save Lines
             </button>
     
             {/* การแสดงผลจุดในรูปแบบที่ต้องการ */}

@@ -60,36 +60,41 @@ router_parkinglot.post('/user/saveParkingLot', (req, res) => {
     });
 });
 
-router_parkinglot.post('/user/save-index', (req, res) => {
-    const { url, points, parkingLotID } = req.body;
+router_parkinglot.post('/user/save-camera', (req, res) => {
+    const { url, parkingLotID, cameraFunctions } = req.body;
+
+    if (!url || !parkingLotID || !cameraFunctions) {
+        return res.status(400).send('Missing required fields');
+    }
+
+    const query = 'INSERT INTO camera (rtsp, ParkingLot_ID, Camera_Functions) VALUES (?, ?, ?)';
+    db.query(query, [url, parkingLotID, cameraFunctions], (err, result) => {
+        if (err) {
+            console.error('Error saving data to camera table:', err);
+            return res.status(500).send('Error saving data to camera table');
+        }
+        res.status(200).send('Camera data saved successfully');
+    });
+});
+
+router_parkinglot.post('/user/save-parkingspace', (req, res) => {
+    const { points, parkingLotID } = req.body;
 
     if (!points || points.length === 0 || !parkingLotID) {
         return res.status(400).send('Missing required fields or points not in correct format');
     }
 
     const pointsJson = JSON.stringify(points);
-    const cameraFunctions = 'Detect space';
 
-    // คำสั่งสำหรับบันทึกข้อมูลในตาราง parkingspace
-    const queryIndex = 'INSERT INTO parkingspace (points_data, ParkingLot_ID) VALUES (?, ?)';
-    db.query(queryIndex, [pointsJson, parkingLotID], (err, result) => {
+    const query = 'INSERT INTO parkingspace (points_data, ParkingLot_ID) VALUES (?, ?)';
+    db.query(query, [pointsJson, parkingLotID], (err, result) => {
         if (err) {
             console.error('Error saving data to parkingspace table:', err);
             return res.status(500).send('Error saving data to parkingspace table');
         }
-
-        // ทำการบันทึกข้อมูลลงในตาราง camera เพียงหนึ่งครั้ง
-        const querypoint = 'INSERT INTO camera (rtsp, ParkingLot_ID, Camera_Functions) VALUES (?, ?, ?)';
-        db.query(querypoint, [url, parkingLotID, cameraFunctions], (err, result) => {
-            if (err) {
-                console.error('Error saving data to camera table:', err);
-                return res.status(500).send('Error saving data to camera table');
-            }
-            res.status(200).send('Points saved successfully');
-        });
+        res.status(200).send('Points saved successfully');
     });
 });
-
 
 
 module.exports = router_parkinglot;
