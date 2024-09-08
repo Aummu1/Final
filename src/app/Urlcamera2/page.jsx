@@ -10,7 +10,10 @@ function UrlCamera() {
     const canvasRef = useRef(null);
     const [dataJson, setDataJson] = useState([]);
     const [drawing, setDrawing] = useState(false);
-    const [startPos, setStartPos] = useState({ x: 0, y: 0 });
+    const [points, setPoints] = useState([]);
+    const [shapes, setShapes] = useState([]);
+
+    const maxPoints = 4; // จำนวนจุดสูงสุดที่ต้องการ
 
     const handleChange = (event) => {
         setUrl(event.target.value);
@@ -31,64 +34,15 @@ function UrlCamera() {
         const mouseX = Math.round(event.clientX - rect.left);
         const mouseY = Math.round(event.clientY - rect.top);
 
-        setStartPos({ x: mouseX, y: mouseY });
-        setDrawing(true);
-    };
+        const newPoints = [...points, { x: mouseX, y: mouseY }];
+        setPoints(newPoints);
 
-    const handleMouseMove = (event) => {
-        if (!drawing) return;
-
-        const canvas = canvasRef.current;
-        const ctx = canvas.getContext('2d');
-        const rect = canvas.getBoundingClientRect();
-        const mouseX = Math.round(event.clientX - rect.left);
-        const mouseY = Math.round(event.clientY - rect.top);
-
-        canvas.width = canvas.clientWidth;
-        canvas.height = canvas.clientHeight;
-
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        ctx.beginPath();
-        ctx.strokeStyle = 'black';
-        ctx.lineWidth = 2;
-        for (const line of dataJson) {
-            const { dataX1, dataY1, dataX2, dataY2 } = line;
-            for (let i = 0; i < dataX1.length; i++) {
-                ctx.moveTo(dataX1[i], dataY1[i]);
-                ctx.lineTo(dataX2[i], dataY2[i]);
-            }
+        if (newPoints.length === maxPoints) {
+            // วาดกรอบเมื่อครบ 4 จุด
+            const newShape = [...newPoints, newPoints[0]]; // วาดรูปร่างปิด
+            setShapes((prevShapes) => [...prevShapes, newShape]);
+            setPoints([]); // รีเซ็ตจุดสำหรับการวาดต่อไป
         }
-        ctx.stroke();
-        ctx.closePath();
-
-        ctx.beginPath();
-        ctx.moveTo(startPos.x, startPos.y);
-        ctx.lineTo(mouseX, mouseY);
-        ctx.stroke();
-        ctx.closePath();
-    };
-
-    const handleMouseUp = (event) => {
-        if (!drawing) return;
-
-        const canvas = canvasRef.current;
-        const ctx = canvas.getContext('2d');
-        const rect = canvas.getBoundingClientRect();
-        const mouseX = Math.round(event.clientX - rect.left);
-        const mouseY = Math.round(event.clientY - rect.top);
-
-        setDrawing(false);
-
-        setDataJson((prevState) => [
-            ...prevState,
-            {
-                dataX1: [startPos.x],
-                dataY1: [startPos.y],
-                dataX2: [mouseX],
-                dataY2: [mouseY]
-            }
-        ]);
     };
 
     useEffect(() => {
@@ -103,38 +57,42 @@ function UrlCamera() {
             ctx.strokeStyle = 'black';
             ctx.lineWidth = 2;
 
-            for (const line of dataJson) {
-                const { dataX1, dataY1, dataX2, dataY2 } = line;
-                for (let i = 0; i < dataX1.length; i++) {
-                    ctx.moveTo(dataX1[i], dataY1[i]);
-                    ctx.lineTo(dataX2[i], dataY2[i]);
+            // วาดเส้นที่มีอยู่
+            for (const shape of shapes) {
+                ctx.moveTo(shape[0].x, shape[0].y);
+                for (let i = 1; i < shape.length; i++) {
+                    ctx.lineTo(shape[i].x, shape[i].y);
+                }
+                ctx.closePath();
+            }
+            ctx.stroke();
+
+            // วาดเส้นที่กำลังวาด
+            ctx.beginPath();
+            if (points.length > 0) {
+                ctx.moveTo(points[0].x, points[0].y);
+                for (let i = 1; i < points.length; i++) {
+                    ctx.lineTo(points[i].x, points[i].y);
                 }
             }
             ctx.stroke();
             ctx.closePath();
         }
-    }, [dataJson]);
+    }, [points, shapes]);
 
     const handleSave = async () => {
         try {
-            // ดึงข้อมูล ParkingLot_ID ล่าสุด
             const parkingLotResponse = await axios.get('http://localhost:2546/api/user/getParkingLotID');
             const parkingLotID = parkingLotResponse.data.ParkingLot_ID;
-    
-            // บันทึกข้อมูล RTSP URL และเส้นที่วาดพร้อม ParkingLot_ID
+
             await axios.post('http://localhost:2546/api/user/save-data', {
                 url,
-                lines: dataJson.map(line => ({
-                    x1: line.dataX1[0],
-                    y1: line.dataY1[0],
-                    x2: line.dataX2[0],
-                    y2: line.dataY2[0]
-                })),
-                parkingLotID // ส่งค่า ParkingLot_ID ไปพร้อมกับข้อมูลที่บันทึก
+                lines: shapes.map(shape => shape.map(point => ({ x: point.x, y: point.y }))),
+                parkingLotID
             });
-    
+
             alert('Lines and RTSP URL saved successfully!');
-    
+
         } catch (error) {
             console.error('Error saving data:', error);
             alert('Failed to save data.');
@@ -163,8 +121,6 @@ function UrlCamera() {
                     ref={canvasRef}
                     id="lineCanvas"
                     onMouseDown={handleMouseDown}
-                    onMouseMove={handleMouseMove}
-                    onMouseUp={handleMouseUp}
                 ></canvas>
 
                 {streamUrl && (
@@ -180,7 +136,7 @@ function UrlCamera() {
                 <a className='text-decoration-none text-white' href="AdminPage">Save Lines</a>
             </button>
 
-            <p className='mt-4'>{JSON.stringify(dataJson)}</p>
+            <p className='mt-4'>{JSON.stringify(shapes)}</p>
         </div>
     );
 }
