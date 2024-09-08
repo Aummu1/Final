@@ -63,8 +63,10 @@ router_camera.post('/user/save-data', (req, res) => {
         }
     });
 
-    const query = 'INSERT INTO camera (rtsp, Line1, Line2, Black, ParkingLot_ID) VALUES (?, ?, ?, ?, ?)';
-    db.query(query, [url, Line1, Line2, Black, parkingLotID], (err, result) => {
+    const cameraFunctions = 'Detect License plates';
+
+    const query = 'INSERT INTO camera (rtsp, Line1, Line2, Black, ParkingLot_ID, Camera_Functions) VALUES (?, ?, ?, ?, ?, ?)';
+    db.query(query, [url, Line1, Line2, Black, parkingLotID, cameraFunctions], (err, result) => {
         if (err) {
             console.error('Error saving data:', err);
             return res.status(500).send('Error saving data');

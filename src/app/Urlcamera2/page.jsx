@@ -89,7 +89,8 @@ function UrlCamera() {
                 const pointsToSave = shape.map(point => ({ x: point.x, y: point.y }));
                 await axios.post('http://localhost:2546/api/user/save-index', {
                     points: pointsToSave,
-                    parkingLotID
+                    parkingLotID,
+                    url
                 });
             }
     
@@ -104,7 +105,9 @@ function UrlCamera() {
 
     return (
         <div className="App">
-            <h1 className='mb-4 mt-3'>Camera for detect license plates</h1>
+            <h1 className='mb-4 mt-3'>Camera for detect space</h1>
+            <p>rtsp://admin:Admin123456@192.168.1.100:554/cam/realmonitor?channel=1&subtype=0&unicast=true&proto=Onvif
+            </p>
             <form onSubmit={handleSubmit} className="form-inline">
                 <input
                     type="text"
