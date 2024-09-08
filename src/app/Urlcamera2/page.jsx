@@ -177,7 +177,7 @@ function UrlCamera() {
             </div>
 
             <button onClick={handleSave} className="btn btn-success mt-4">
-                <a href="AdminPage">Save Lines</a>
+                <a className='text-decoration-none text-white' href="AdminPage">Save Lines</a>
             </button>
 
             <p className='mt-4'>{JSON.stringify(dataJson)}</p>
