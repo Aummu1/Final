@@ -60,4 +60,25 @@ router_parkinglot.post('/user/saveParkingLot', (req, res) => {
     });
 });
 
+router_parkinglot.post('/user/save-index', (req, res) => {
+    const { points, parkingLotID } = req.body;
+
+    if (!points || points.length !== 5 || !parkingLotID) {
+        return res.status(400).send('Missing required fields or points not in correct format');
+    }
+
+    // แปลงข้อมูล points เป็น JSON string
+    const pointsJson = JSON.stringify(points);
+
+    // สร้าง query สำหรับการบันทึกข้อมูล
+    const queryIndex = 'INSERT INTO parkingspace (points_data, ParkingLot_ID) VALUES (?, ?)';
+    db.query(queryIndex, [pointsJson, parkingLotID], (err, result) => {
+        if (err) {
+            console.error('Error saving data to parkingspace table:', err);
+            return res.status(500).send('Error saving data');
+        }
+        res.status(200).send('Points saved successfully');
+    });
+});
+
 module.exports = router_parkinglot;

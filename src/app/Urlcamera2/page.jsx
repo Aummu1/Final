@@ -84,20 +84,23 @@ function UrlCamera() {
         try {
             const parkingLotResponse = await axios.get('http://localhost:2546/api/user/getParkingLotID');
             const parkingLotID = parkingLotResponse.data.ParkingLot_ID;
-
-            await axios.post('http://localhost:2546/api/user/save-data', {
-                url,
-                lines: shapes.map(shape => shape.map(point => ({ x: point.x, y: point.y }))),
-                parkingLotID
-            });
-
-            alert('Lines and RTSP URL saved successfully!');
-
+    
+            for (const shape of shapes) {
+                const pointsToSave = shape.map(point => ({ x: point.x, y: point.y }));
+                await axios.post('http://localhost:2546/api/user/save-index', {
+                    points: pointsToSave,
+                    parkingLotID
+                });
+            }
+    
+            alert('Lines and points saved successfully!');
+    
         } catch (error) {
             console.error('Error saving data:', error);
             alert('Failed to save data.');
         }
-    };
+    };    
+    
 
     return (
         <div className="App">
@@ -115,14 +118,14 @@ function UrlCamera() {
                     Load Stream
                 </button>
             </form>
-
+    
             <div className="video-container">
                 <canvas
                     ref={canvasRef}
                     id="lineCanvas"
                     onMouseDown={handleMouseDown}
                 ></canvas>
-
+    
                 {streamUrl && (
                     <img
                         src={streamUrl}
@@ -131,12 +134,24 @@ function UrlCamera() {
                     ></img>
                 )}
             </div>
-
+    
             <button onClick={handleSave} className="btn btn-success mt-4">
                 <a className='text-decoration-none text-white' href="AdminPage">Save Lines</a>
             </button>
-
-            <p className='mt-4'>{JSON.stringify(shapes)}</p>
+    
+            {/* การแสดงผลจุดในรูปแบบที่ต้องการ */}
+            <div className='mt-4 d-flex'>
+                {shapes.map((shape, shapeIndex) => (
+                    <div className='mr-5' key={shapeIndex}>
+                        <h3>ช่องที่ {shapeIndex + 1}</h3>
+                        {shape.map((point, pointIndex) => (
+                            <p key={pointIndex}>
+                                จุดที่ {pointIndex + 1} : {"{"} "x": {point.x}, "y": {point.y} {"}"}
+                            </p>
+                        ))}
+                    </div>
+                ))}
+            </div>
         </div>
     );
 }
