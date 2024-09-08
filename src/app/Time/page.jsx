@@ -14,7 +14,7 @@ function Time() {
         event.preventDefault(); // Prevent the default form submission
 
         try {
-            const response = await axios.post(
+            await axios.post(
                 "http://localhost:2546/api/user/settingtime",
                 { 
                     time,
@@ -26,7 +26,6 @@ function Time() {
                 }
             );
             alert("Time Setting Successfully.");
-            await signOut({ callbackUrl: "/" }); // Redirect after successful password reset
         } catch (error) {
             console.error("Error Time Setting:", error.message);
             alert("Error Time Setting. Please try again.");

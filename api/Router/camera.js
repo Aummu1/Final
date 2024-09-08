@@ -76,14 +76,21 @@ router_camera.post('/user/save-data', (req, res) => {
 router_camera.post('/user/settingtime', (req, res) => {
     const { time } = req.body;
 
-    const query = 'INSERT INTO timesetting (time) VALUES (?)';
-    db.query(query, [time], (err, result) => {  
-        if (err) {
-            console.error('Error fetching SettingTime', err);
-            return res.status(500).send('Error fetching SettingTime');
-        }
-        res.status(200).send(result[0]); 
-    });
+    try {
+        const query = 'INSERT INTO timesetting (time) VALUES (?)';
+        db.query(query, [time], (err, result) => {
+            if (err) {
+                console.error("Error settingtime :", err);
+                res.status(500).send("Successfully Settingtime");
+                return;
+            }
+        });
+        console.log("Settingtime Successfully.");
+        res.status(200).send("Settingtime Successfully.");
+    } catch (error) {
+        console.error("Error Settingtime \n", error);
+        res.status(500).send("Error Settingtime");
+    }
 });
 
 module.exports = router_camera;
