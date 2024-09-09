@@ -79,20 +79,48 @@ router_camera.post('/user/settingtime', (req, res) => {
     const { time } = req.body;
 
     try {
-        const query = 'INSERT INTO timesetting (time) VALUES (?)';
-        db.query(query, [time], (err, result) => {
+        // ตรวจสอบว่ามีข้อมูลอยู่แล้วหรือไม่
+        const selectQuery = 'SELECT * FROM timesetting';
+        db.query(selectQuery, (err, results) => {
             if (err) {
-                console.error("Error settingtime :", err);
-                res.status(500).send("Successfully Settingtime");
+                console.error("Error checking time setting:", err);
+                res.status(500).send("Error checking time setting");
                 return;
             }
+
+            if (results.length > 0) {
+                // ถ้ามีข้อมูลแล้ว ให้ทำการอัปเดตข้อมูลใหม่
+                const updateQuery = 'UPDATE timesetting SET time = ? WHERE timesetting_id = ?';
+                const timesetting_id = results[0].timesetting_id; // ใช้ id ของข้อมูลที่มีอยู่
+                db.query(updateQuery, [time, timesetting_id], (err, result) => {
+                    if (err) {
+                        console.error("Error updating time setting:", err);
+                        res.status(500).send("Error updating time setting");
+                        return;
+                    }
+                    console.log("Time setting updated successfully.");
+                    res.status(200).send("Time setting updated successfully.");
+                });
+            } else {
+                // ถ้าไม่มีข้อมูล ให้ทำการเพิ่มข้อมูลใหม่
+                const insertQuery = 'INSERT INTO timesetting (time) VALUES (?)';
+                db.query(insertQuery, [time], (err, result) => {
+                    if (err) {
+                        console.error("Error inserting time setting:", err);
+                        res.status(500).send("Error inserting time setting");
+                        return;
+                    }
+                    console.log("Time setting inserted successfully.");
+                    res.status(200).send("Time setting inserted successfully.");
+                });
+            }
         });
-        console.log("Settingtime Successfully.");
-        res.status(200).send("Settingtime Successfully.");
     } catch (error) {
         console.error("Error Settingtime \n", error);
         res.status(500).send("Error Settingtime");
     }
 });
+
+
 
 module.exports = router_camera;

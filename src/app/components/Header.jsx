@@ -1,26 +1,34 @@
-"use client";
+// Header.jsx
+'use client';
 
-import React, { useEffect } from 'react'; 
-import Image from "next/image";
-import Link from "next/link";
+import React, { useEffect, useState } from 'react'; 
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { Cursor, PersonFill } from 'bootstrap-icons-react';
-import { setupNavTest } from '../../app/script.js';
-import 'boxicons/css/boxicons.min.css';
 import { useSession } from "next-auth/react";
+import axios from 'axios';
 
-function Header() {
+function Header({ onParkingLotChange }) {
     const { data: session } = useSession();
-    // console.log(session);
+    const [parkingLots, setParkingLots] = useState([]);
+
+    useEffect(() => {
+        const fetchParkingLots = async () => {
+            try {
+                const response = await axios.get('http://localhost:2546/api/user/option');
+                setParkingLots(response.data);
+            } catch (error) {
+                console.error('Error fetching parking lots:', error);
+            }
+        };
+
+        fetchParkingLots();
+    }, []);
 
     return (
         <div className="col-12 d-flex mt-10 mb-10 align-items-center justify-content-around">
             <div className="">
-                <select className="form-select" aria-label="Default select example" defaultValue="">
-                    <option value="" disabled>เลือกเมนูนี้</option>
-                    <option value="1">ลานจอดรถวิศวคอมพิวเตอร์</option>
-                    <option value="2">สอง</option>
-                    <option value="3">สาม</option>
+                <select onChange={onParkingLotChange} className="form-select" aria-label="Default select example" defaultValue="">                    {parkingLots.map((lot, index) => (
+                        <option key={index} value={lot.ParkingLot_ID}>{lot.ParkingLot_Name}</option>
+                    ))}
                 </select>
             </div>
 

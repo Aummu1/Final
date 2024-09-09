@@ -96,5 +96,18 @@ router_parkinglot.post('/user/save-parkingspace', (req, res) => {
     });
 });
 
+// -----------------------------------get parkinglot----------------------------------------
+
+router_parkinglot.get('/user/option', (req, res) => {
+    const query = 'SELECT ParkingLot_ID, ParkingLot_Name FROM parkinglot';
+
+    db.query(query, (err, results) => {
+        if (err) {
+            console.error('Error fetching data from parkinglot table:', err);
+            return res.status(500).send('Error fetching data');
+        }
+        res.status(200).json(results);
+    });
+});
 
 module.exports = router_parkinglot;
