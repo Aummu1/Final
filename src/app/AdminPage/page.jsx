@@ -4,7 +4,7 @@ import Link from "next/link";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import Navbar from "../components/Navbar";
 import Dashboard from "../Dashboard/page";
-import Header from "../components/Header";
+// import Header from "../components/Header";
 import Footer from "../components/Footer";
 import React, { useState, useEffect } from 'react';
 import { useSession } from "next-auth/react";
@@ -51,7 +51,7 @@ function AdminPage() {
                         <Navbar />
                     </div>
                     <div className={`col-${mode === 1 ? 11 : mode === 2 ? 11 : 10}`}>
-                        <Header />
+                        {/* <Header /> */}
                         <Dashboard />
                     </div>
                     <Footer />
@@ -67,7 +67,7 @@ function AdminPage() {
                         <Navbar />
                     </div>
                     <div className={`col-${mode === 1 ? 12 : mode === 2 ? 11 : 10}`}>
-                        <Header />
+                        {/* <Header /> */}
                         <Dashboard />
                         <Footer />
                     </div>

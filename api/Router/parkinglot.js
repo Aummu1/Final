@@ -110,4 +110,49 @@ router_parkinglot.get('/user/option', (req, res) => {
     });
 });
 
+// Endpoint สำหรับดึงข้อมูล parking lot ตาม ID
+router_parkinglot.get('/user/parkinglotdash/:id', (req, res) => {
+    const parkingLotID = req.params.id;
+
+    // Query เพื่อดึงข้อมูลตาม ID
+    const query = `
+        SELECT 
+            ParkingLot_ID, 
+            AllSpace, 
+            FreeSpace, 
+            UnFreeSpace, 
+            UnknowCar, 
+            UnknowObj 
+        FROM parkinglot 
+        WHERE ParkingLot_ID = ?`;
+
+    db.query(query, [parkingLotID], (err, results) => {
+        if (err) {
+            console.error('Error fetching data from parkinglot table:', err);
+            return res.status(500).send('Error fetching data');
+        }
+
+        if (results.length === 0) {
+            return res.status(404).send('Parking lot not found');
+        }
+
+        // ส่งข้อมูลกลับไปที่ client
+        res.status(200).json(results[0]);
+    });
+});
+
+router_parkinglot.get('/user/camera-links/:parkingLotId', (req, res) => {
+    const { parkingLotId } = req.params;
+    const query = 'SELECT rtsp FROM camera WHERE ParkingLot_ID = ?';
+
+    db.query(query, [parkingLotId], (err, results) => {
+        if (err) {
+            console.error('Error fetching RTSP links from camera table:', err);
+            return res.status(500).send('Error fetching RTSP links');
+        }
+        res.status(200).json(results);
+    });
+});
+
+
 module.exports = router_parkinglot;
