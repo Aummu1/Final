@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import axios from 'axios';
 import Navbar from "../components/Navbar";
+import Infor_Camera from '../Infor_Camera/page';
 
 function Infor_ParkingLot() {
     const [parkingData, setParkingData] = useState([]);
@@ -17,9 +18,9 @@ function Infor_ParkingLot() {
     }, []);
 
     const fetchParkingData = () => {
-        axios.get('http://localhost:2546/api/user/getdataparkinglot')
+        axios.get('http://localhost:2546/api/parkinglot/getdataparkinglot')
             .then(response => {
-                setParkingData(response.data); 
+                setParkingData(response.data);
             })
             .catch(error => {
                 console.error("Error fetching data:", error);
@@ -41,9 +42,20 @@ function Infor_ParkingLot() {
         setAllChecked(allChecked);
     };
 
+    const handleDelete = () => {
+        const selectedData = parkingData.filter(data => data.checked);
+
+        if (selectedData.length > 0) {
+            deleteSelectedParkingLots();
+        } else {
+            alert("Please select at least one parking lot to delete.");
+        }
+    };
+
+
     const deleteSelectedParkingLots = async () => {
-        const selectedData = parkingData.filter(data => data.checked); 
-        const selectedIds = selectedData.map(data => data.ParkingLot_ID); 
+        const selectedData = parkingData.filter(data => data.checked);
+        const selectedIds = selectedData.map(data => data.ParkingLot_ID);
 
         if (selectedIds.length === 0) {
             alert("Please select at least one parking lot to delete.");
@@ -51,11 +63,25 @@ function Infor_ParkingLot() {
         }
 
         try {
+            // ลบหลายรายการพร้อมกัน
             await Promise.all(selectedIds.map(id => axios.delete(`http://localhost:2546/api/parkinglot/delete/${id}`)));
+            // อัพเดตข้อมูลหลังจากลบ
             setParkingData(parkingData.filter(data => !data.checked));
+            setAllChecked(false); // ยกเลิกการเลือกทั้งหมด
             alert("Deleted Selected Parking Lots Successfully.");
         } catch (error) {
             console.error("Error deleting parking lots:", error.message);
+        }
+    };
+
+
+    const deleteParkingLot = async (id) => {
+        try {
+            await axios.delete(`http://localhost:2546/api/parkinglot/delete/${id}`);
+            setParkingData(parkingData.filter(data => data.ParkingLot_ID !== id));
+            alert("Deleted Parking Lot Successfully.");
+        } catch (error) {
+            console.error("Error deleting parking lot:", error.message);
         }
     };
 
@@ -102,11 +128,11 @@ function Infor_ParkingLot() {
                     <thead>
                         <tr>
                             <th>
-                                <input 
-                                    type="checkbox" 
-                                    id="checkall" 
-                                    checked={allChecked} 
-                                    onChange={handleCheckAll} 
+                                <input
+                                    type="checkbox"
+                                    id="checkall"
+                                    checked={allChecked}
+                                    onChange={handleCheckAll}
                                     className="rounded"
                                 />
                             </th>
@@ -120,9 +146,9 @@ function Infor_ParkingLot() {
                             currentItems.map((data, index) => (
                                 <tr key={index} className="rounded">
                                     <td>
-                                        <input 
-                                            type="checkbox" 
-                                            className="checkthis rounded" 
+                                        <input
+                                            type="checkbox"
+                                            className="checkthis rounded"
                                             checked={data.checked || false}
                                             onChange={() => handleCheck(indexOfFirstItem + index)}
                                         />
@@ -146,9 +172,14 @@ function Infor_ParkingLot() {
                                                 Save
                                             </button>
                                         ) : (
-                                            <button className="btn btn-primary btn-sm" onClick={() => startEdit(index)}>
-                                                Edit
-                                            </button>
+                                            <>
+                                                <button className="btn btn-primary btn-sm" onClick={() => startEdit(index)}>
+                                                    Edit
+                                                </button>
+                                                <button className="btn btn-danger" onClick={handleDelete}>
+                                                    Delete Selected
+                                                </button>
+                                            </>
                                         )}
                                     </td>
                                 </tr>
@@ -162,9 +193,6 @@ function Infor_ParkingLot() {
                 </table>
 
                 <div className="clearfix mt-5">
-                    <button className="btn btn-danger" onClick={deleteSelectedParkingLots}>
-                        Delete Selected
-                    </button>
                     <ul className="pagination justify-content-end">
                         {pageNumbers.map(number => (
                             <li key={number} className={`page-item ${currentPage === number ? 'active' : ''}`}>
@@ -176,6 +204,7 @@ function Infor_ParkingLot() {
                     </ul>
                 </div>
             </div>
+            <Infor_Camera />
         </div>
     );
 }
