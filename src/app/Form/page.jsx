@@ -155,7 +155,7 @@ function DataTable() {
     return (
         <div className="container py-5">
             <Navbar />
-            <h4 className='mb-5 text-center'>Bootstrap Snippet for DataTable</h4>
+            <h4 className='mb-5 text-center'>Waiting for a response</h4>
             <div className="table-responsive text-center">
                 <table id="mytable" className="table table-custom table-striped">
                     <thead>

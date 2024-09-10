@@ -30,7 +30,7 @@ function Dashboard() {
     // Fetch camera links when a parking lot is selected
     useEffect(() => {
         if (selectedParkingLot) {
-            console.log('Fetching camera links for:', selectedParkingLot); 
+            console.log('Fetching camera links for:', selectedParkingLot);
             const fetchCameraLinks = async () => {
                 try {
                     const response = await axios.get(`http://localhost:2546/api/user/camera-links/${selectedParkingLot}`);
@@ -157,14 +157,14 @@ function Dashboard() {
                 <div className="col-lg-6 col-md-12 mt-4">
                     <p>Camera 1 📷</p>
                     {cameraLinks[0] && (
-                        <img src={`http://172.23.226.91:5000/video_feed?url=${encodeURIComponent(cameraLinks[0].rtsp)}`} autoPlay controls style={{ width: '100%' }} />
+                        <img src={`http://172.23.227.1:5000/video_feed?url=${encodeURIComponent(cameraLinks[0].rtsp)}`} autoPlay controls style={{ width: '100%' }} />
                     )}
                 </div>
 
                 <div className="col-lg-6 col-md-12 mt-4">
                     <p>Camera 2 📷</p>
                     {cameraLinks[1] && (
-                        <img src={`http://172.23.226.91:5000/video_feed?url=${encodeURIComponent(cameraLinks[1].rtsp)}`} autoPlay controls style={{ width: '100%' }} />
+                        <img src={`http://172.23.227.1:5000/video_feed?url=${encodeURIComponent(cameraLinks[1].rtsp)}`} autoPlay controls style={{ width: '100%' }} />
                     )}
                 </div>
             </section>
@@ -172,13 +172,18 @@ function Dashboard() {
 
             <section className=''>
                 <p>Data Charts📊</p>
-                <BarChart
-                    series={[
-                        { name: 'Series 1', data: [12, 30, 1, 8, 22, 17] },
-                        { name: 'Series 2', data: [23, 6, 14, 24, 11, 19] }
-                    ]}
-                />
+                <div style={{ height: '400px', width: '100%' }}> {/* กำหนดความสูงและความกว้าง */}
+                    <BarChart
+                        series={[
+                            { name: 'Series 1', data: [12, 30, 1, 8, 22, 17] },
+                            { name: 'Series 2', data: [23, 6, 14, 24, 11, 19] },
+                            { name: 'Series 3', data: [23, 6, 14, 24, 11, 19] }
+                        ]}
+                        height={400}  // เพิ่มความสูงให้กับ BarChart
+                    />
+                </div>
             </section>
+
         </div>
     );
 }
