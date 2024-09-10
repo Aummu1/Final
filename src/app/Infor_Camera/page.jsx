@@ -87,6 +87,7 @@ function Infor_Camera() {
             setEditIndex(null);
             setEditRTSP('');
             setEditCameraFunctions('');
+            fetchCameraData();
         } catch (error) {
             console.error("Error updating camera data:", error.message);
         }
