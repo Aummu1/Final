@@ -123,5 +123,45 @@ router_inforparking.put("/camera/update/:id", (req, res) => {
     });
 });
 
+router_inforparking.get("/led/getdataled", (req, res) => {
+    const query = 'SELECT ID_LED, ParkingLot_ID, Wifi, Wifi_Password FROM led';
+    db.query(query, (err, result) => {
+        if (err) {
+            console.error("Error fetching LED data from MySQL database:", err);
+            res.status(500).send("An error occurred while fetching LED data from the database");
+            return;
+        }
+        res.status(200).json(result);
+    });
+});
+
+router_inforparking.delete("/led/delete/:id", (req, res) => {
+    const ledId = req.params.id;
+    const query = 'DELETE FROM led WHERE ID_LED = ?';
+
+    db.query(query, [ledId], (err, result) => {
+        if (err) {
+            console.error("Error deleting LED data from MySQL database:", err);
+            res.status(500).send("An error occurred while deleting LED data from the database");
+            return;
+        }
+        res.status(200).send("Deleted LED data successfully");
+    });
+});
+
+router_inforparking.put("/led/update/:id", (req, res) => {
+    const ledId = req.params.id;
+    const { Wifi, Wifi_Password } = req.body;
+    const query = 'UPDATE led SET Wifi = ?, Wifi_Password = ? WHERE ID_LED = ?';
+
+    db.query(query, [Wifi, Wifi_Password, ledId], (err, result) => {
+        if (err) {
+            console.error("Error updating LED data in MySQL database:", err);
+            res.status(500).send("An error occurred while updating LED data in the database");
+            return;
+        }
+        res.status(200).send("Updated LED data successfully");
+    });
+});
 
 module.exports = router_inforparking;

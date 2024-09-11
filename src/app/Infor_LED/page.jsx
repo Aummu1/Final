@@ -2,130 +2,128 @@ import React, { useState, useEffect } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import axios from 'axios';
 
-function Infor_Camera() {
-    const [cameraData, setCameraData] = useState([]);
+function Infor_LED() {
+    const [ledData, setLedData] = useState([]);
     const [allChecked, setAllChecked] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const [editIndex, setEditIndex] = useState(null);
-    const [editRTSP, setEditRTSP] = useState('');
-    const [editCameraFunctions, setEditCameraFunctions] = useState('');
+    const [editWifi, setEditWifi] = useState('');
+    const [editWifiPassword, setEditWifiPassword] = useState('');
     const itemsPerPage = 7;
 
     useEffect(() => {
-        fetchCameraData();
+        fetchLedData();
     }, []);
 
-    const fetchCameraData = () => {
-        axios.get('http://localhost:2546/api/camera/getdatacamera')
+    const fetchLedData = () => {
+        axios.get('http://localhost:2546/api/led/getdataled')
             .then(response => {
-                setCameraData(response.data);
+                setLedData(response.data);
             })
             .catch(error => {
-                console.error("Error fetching camera data:", error);
+                console.error("Error fetching LED data:", error);
             });
-    }
+    };
 
     const handleCheckAll = (event) => {
         const isChecked = event.target.checked;
         setAllChecked(isChecked);
-        setCameraData(cameraData.map(data => ({ ...data, checked: isChecked })));
+        setLedData(ledData.map(data => ({ ...data, checked: isChecked })));
     };
 
-    const handleCameraCheck = (index) => {
-        const updatedData = [...cameraData];
+    const handleLedCheck = (index) => {
+        const updatedData = [...ledData];
         updatedData[index].checked = !updatedData[index].checked;
-        setCameraData(updatedData);
+        setLedData(updatedData);
 
         const allChecked = updatedData.every(data => data.checked);
         setAllChecked(allChecked);
     };
 
-    const deleteSelectedCamera = async () => {
-        const selectedData = cameraData.filter(data => data.checked);
-        const selectedIds = selectedData.map(data => data.ID_Camera);
+    const deleteSelectedLed = async () => {
+        const selectedData = ledData.filter(data => data.checked);
+        const selectedIds = selectedData.map(data => data.ID_LED);
 
         if (selectedIds.length === 0) {
-            alert("Please select at least one camera to delete.");
+            alert("กรุณาเลือก LED อย่างน้อยหนึ่งรายการเพื่อลบ");
             return;
         }
 
         try {
-            await Promise.all(selectedIds.map(id => axios.delete(`http://localhost:2546/api/camera/delete/${id}`)));
-            setCameraData(cameraData.filter(data => !data.checked));
-            setAllChecked(false); // Uncheck the 'select all' checkbox
-            alert("Deleted Selected Cameras Successfully.");
+            await Promise.all(selectedIds.map(id => axios.delete(`http://localhost:2546/api/led/delete/${id}`)));
+            setLedData(ledData.filter(data => !data.checked));
+            setAllChecked(false); // ยกเลิกเลือกทั้งหมด
+            alert("ลบ LED ที่เลือกเรียบร้อยแล้ว");
         } catch (error) {
-            console.error("Error deleting cameras:", error.message);
+            console.error("Error deleting LEDs:", error.message);
         }
     };
 
-    const deleteCamera = async (id) => {
+    const deleteLed = async (id) => {
         try {
-            await axios.delete(`http://localhost:2546/api/camera/delete/${id}`);
-            setCameraData(cameraData.filter(data => data.ID_Camera !== id));
-            alert("Deleted Camera Successfully.");
+            await axios.delete(`http://localhost:2546/api/led/delete/${id}`);
+            setLedData(ledData.filter(data => data.ID_LED !== id));
+            alert("ลบ LED สำเร็จ");
         } catch (error) {
-            console.error("Error deleting camera:", error.message);
+            console.error("Error deleting LED:", error.message);
         }
     };
 
     const saveEdit = async () => {
-        const updatedData = [...cameraData];
+        const updatedData = [...ledData];
         updatedData[editIndex] = {
             ...updatedData[editIndex],
-            rtsp: editRTSP,  // เปลี่ยนเป็น rtsp
-            Camera_Functions: editCameraFunctions
+            Wifi: editWifi,
+            Wifi_Password: editWifiPassword
         };
-        setCameraData(updatedData);
+        setLedData(updatedData);
 
         try {
-            await axios.put(`http://localhost:2546/api/camera/update/${cameraData[editIndex].ID_Camera}`, {
-                rtsp: editRTSP,  // ใช้ชื่อ field ตรงตามฐานข้อมูล
-                Camera_Functions: editCameraFunctions
+            await axios.put(`http://localhost:2546/api/led/update/${ledData[editIndex].ID_LED}`, {
+                Wifi: editWifi,
+                Wifi_Password: editWifiPassword
             });
-            alert("Updated Camera RTSP and Camera Functions Successfully.");
+            alert("อัปเดตข้อมูล LED สำเร็จ");
             setEditIndex(null);
-            setEditRTSP('');
-            setEditCameraFunctions('');
-            fetchCameraData();
+            setEditWifi('');
+            setEditWifiPassword('');
+            fetchLedData();
         } catch (error) {
-            console.error("Error updating camera data:", error.message);
+            console.error("Error updating LED data:", error.message);
         }
     };
 
     const startEdit = (index) => {
         setEditIndex(index);
-        setEditRTSP(cameraData[index].RTSP);
-        setEditCameraFunctions(cameraData[index].Camera_Functions);
+        setEditWifi(ledData[index].Wifi);
+        setEditWifiPassword(ledData[index].Wifi_Password);
     };
 
-
     const handleDelete = () => {
-        const selectedData = cameraData.filter(data => data.checked);
+        const selectedData = ledData.filter(data => data.checked);
 
         if (selectedData.length > 0) {
-            deleteSelectedCamera();
+            deleteSelectedLed();
         } else {
-            const id = cameraData.find(data => data.ParkingLot_ID === data.ParkingLot_ID)?.ID_Camera;
+            const id = ledData.find(data => data.ParkingLot_ID === data.ParkingLot_ID)?.ID_LED;
             if (id) {
-                deleteCamera(id);
+                deleteLed(id);
             }
         }
     };
 
-
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    const currentCameraItems = cameraData.slice(indexOfFirstItem, indexOfLastItem);
+    const currentLedItems = ledData.slice(indexOfFirstItem, indexOfLastItem);
 
     const pageNumbers = [];
-    for (let i = 1; i <= Math.ceil(cameraData.length / itemsPerPage); i++) {
+    for (let i = 1; i <= Math.ceil(ledData.length / itemsPerPage); i++) {
         pageNumbers.push(i);
     }
 
     return (
         <div className="container">
-            <h4 className='mb-5 text-center'>Camera</h4>
+            <h4 className='mb-5 text-center'>LED</h4>
             <div className="table-responsive text-center">
                 <table id="mytable" className="table table-custom table-striped">
                     <thead>
@@ -140,39 +138,39 @@ function Infor_Camera() {
                                 />
                             </th>
                             <th>ParkingLot ID</th>
-                            <th>ID_Camera</th>
-                            <th>RTSP</th>
-                            <th>Camera_Functions</th>
+                            <th>ID_LED</th>
+                            <th>Wifi</th>
+                            <th>Wifi_Password</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {currentCameraItems.length > 0 ? (
-                            currentCameraItems.map((data, index) => (
+                        {currentLedItems.length > 0 ? (
+                            currentLedItems.map((data, index) => (
                                 <tr key={index} className="rounded">
                                     <td>
                                         <input
                                             type="checkbox"
                                             className="checkthis rounded"
                                             checked={data.checked || false}
-                                            onChange={() => handleCameraCheck(indexOfFirstItem + index)}
+                                            onChange={() => handleLedCheck(indexOfFirstItem + index)}
                                         />
                                     </td>
                                     <td>{data.ParkingLot_ID}</td>
-                                    <td>{data.ID_Camera}</td>
+                                    <td>{data.ID_LED}</td>
                                     <td>
                                         {editIndex === index ? (
                                             <>
                                                 <input
                                                     type="text"
-                                                    value={editRTSP}
-                                                    onChange={(e) => setEditRTSP(e.target.value)}
+                                                    value={editWifi}
+                                                    onChange={(e) => setEditWifi(e.target.value)}
                                                     className="form-control"
                                                 />
                                             </>
                                         ) : (
                                             <>
-                                                <div>{data.RTSP}</div>
+                                                <div>{data.Wifi}</div>
                                             </>
                                         )}
                                     </td>
@@ -181,14 +179,14 @@ function Infor_Camera() {
                                             <>
                                                 <input
                                                     type="text"
-                                                    value={editCameraFunctions}
-                                                    onChange={(e) => setEditCameraFunctions(e.target.value)}
+                                                    value={editWifiPassword}
+                                                    onChange={(e) => setEditWifiPassword(e.target.value)}
                                                     className="form-control"
                                                 />
                                             </>
                                         ) : (
                                             <>
-                                                <div>{data.Camera_Functions}</div>
+                                                <div>{data.Wifi_Password}</div>
                                             </>
                                         )}
                                     </td>
@@ -216,7 +214,7 @@ function Infor_Camera() {
                             ))
                         ) : (
                             <tr>
-                                <td colSpan="6" className="text-center">No data available</td>
+                                <td colSpan="6" className="text-center">ไม่มีข้อมูล</td>
                             </tr>
                         )}
                     </tbody>
@@ -238,4 +236,4 @@ function Infor_Camera() {
     );
 }
 
-export default Infor_Camera;
+export default Infor_LED;

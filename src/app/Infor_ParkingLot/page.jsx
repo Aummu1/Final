@@ -4,6 +4,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import axios from 'axios';
 import Navbar from "../components/Navbar";
 import Infor_Camera from '../Infor_Camera/page';
+import Infor_LED from '../Infor_LED/page';
 
 function Infor_ParkingLot() {
     const [parkingData, setParkingData] = useState([]);
@@ -173,11 +174,11 @@ function Infor_ParkingLot() {
                                             </button>
                                         ) : (
                                             <>
-                                                <button className="btn btn-primary btn-sm" onClick={() => startEdit(index)}>
+                                                <button className="btn btn-primary" onClick={() => startEdit(index)}>
                                                     Edit
                                                 </button>
                                                 <button className="btn btn-danger" onClick={handleDelete}>
-                                                    Delete Selected
+                                                    Delete
                                                 </button>
                                             </>
                                         )}
@@ -205,6 +206,7 @@ function Infor_ParkingLot() {
                 </div>
             </div>
             <Infor_Camera />
+            <Infor_LED />
         </div>
     );
 }
