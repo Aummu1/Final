@@ -119,7 +119,7 @@ function UrlCamera() {
     return (
         <div className="App">
             <h1 className='mb-4 mt-3'>Camera for detect space</h1>
-            <p>rtsp://admin:Admin123456@192.168.1.100:554/cam/realmonitor?channel=1&subtype=0&unicast=true&proto=Onvif</p>
+            <p>rtsp://admin:Admin123456@192.168.1.107:554/cam/realmonitor?channel=1&subtype=0&unicast=true&proto=Onvif</p>
             <form onSubmit={handleStreamLoad} className="form-inline">
                 <input
                     type="text"

@@ -157,18 +157,17 @@ function Dashboard() {
                 <div className="col-lg-6 col-md-12 mt-4">
                     <p>Camera 1 📷</p>
                     {cameraLinks[0] && (
-                        <img src={`http://172.23.227.1:5000/video_feed?url=${encodeURIComponent(cameraLinks[0].rtsp)}`} autoPlay controls style={{ width: '100%' }} />
+                        <img src={`http://192.168.91.78:5000/video_feed?url=${encodeURIComponent(cameraLinks[0].rtsp)}`} autoPlay controls style={{ width: '100%' }} />
                     )}
                 </div>
 
                 <div className="col-lg-6 col-md-12 mt-4">
                     <p>Camera 2 📷</p>
                     {cameraLinks[1] && (
-                        <img src={`http://172.23.227.1:5000/video_feed?url=${encodeURIComponent(cameraLinks[1].rtsp)}`} autoPlay controls style={{ width: '100%' }} />
+                        <img src={`http://192.168.91.78:5000/video_feed?url=${encodeURIComponent(cameraLinks[1].rtsp)}`} autoPlay controls style={{ width: '100%' }} />
                     )}
                 </div>
             </section>
-
 
             <section className=''>
                 <p>Data Charts📊</p>

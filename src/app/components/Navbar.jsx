@@ -78,7 +78,7 @@ function Navbar() {
                     <ul className="menu-links p-0">
                         <li className="nav-link">
                             <a href="Infor_ParkingLot">
-                            <i class='bx bxs-data icon'></i>
+                            <i className='bx bxs-data icon'></i>
                                 <span className="text nav-text">Information</span>
                             </a>
                         </li>
@@ -86,7 +86,7 @@ function Navbar() {
                     <ul className="menu-links p-0">
                         <li className="nav-link">
                             <a href="Time">
-                            <i class='bx bxs-time-five icon'></i>
+                            <i className='bx bxs-time-five icon'></i>
                                 <span className="text nav-text">Time</span>
                             </a>
                         </li>
