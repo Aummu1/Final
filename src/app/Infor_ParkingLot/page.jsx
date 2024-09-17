@@ -5,6 +5,7 @@ import axios from 'axios';
 import Navbar from "../components/Navbar";
 import Infor_Camera from '../Infor_Camera/page';
 import Infor_LED from '../Infor_LED/page';
+import Infor_Car from '../Infor_Car/page';
 
 function Infor_ParkingLot() {
     const [parkingData, setParkingData] = useState([]);
@@ -207,6 +208,7 @@ function Infor_ParkingLot() {
             </div>
             <Infor_Camera />
             <Infor_LED />
+            <Infor_Car />
         </div>
     );
 }
