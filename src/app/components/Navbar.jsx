@@ -93,7 +93,7 @@ function Navbar() {
                     </ul>
                 </div>
 
-                <div className="bottom-content">
+                <div className="bottom-content cursor-pointer">
                     <li className="">
                         <a onClick={logout}>
                             <i className='bx bx-log-out icon'></i> 

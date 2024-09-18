@@ -1,17 +1,27 @@
-// Dashboard.jsx
 import React, { useEffect, useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { useSession } from "next-auth/react";
 import axios from 'axios';
-import { BarChart } from '@mui/x-charts/BarChart';
-import 'boxicons/css/boxicons.min.css'; // เพิ่มการนำเข้า Boxicons ที่นี่
+import { Line } from 'react-chartjs-2';
+import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
+
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
+
+const DATA_COUNT = 7;
+const NUMBER_CFG = { count: DATA_COUNT, min: -100, max: 100 };
+
+const initialLabels = ['January', 'February', 'March', 'April', 'May', 'June', 'July'];
+const ToDaysLabels = ['0 AM', '1 AM', '2 AM', '3 AM', '4 AM', '5 AM', '6 AM', '7 AM', '8 AM', '9 AM', '10 AM', '11 AM', '12 PM', '1 PM', '2 PM', '3 PM', '4 PM', '5 PM', '6 PM', '7 PM', '8 PM', '9 PM', '10 PM', '11 PM', '0 PM'];
+const WeeksLabels = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+const YearsLabels = Array.from({ length: 12 }, (_, i) => new Date(0, i).toLocaleString('en', { month: 'long' }));
 
 function Dashboard() {
     const { data: session } = useSession();
     const [parkingLots, setParkingLots] = useState([]);
     const [cameraLinks, setCameraLinks] = useState([]);
-    const [parkingLotData, setParkingLotData] = useState(null); // เพิ่มสถานะสำหรับข้อมูล parking lot
+    const [parkingLotData, setParkingLotData] = useState(null);
     const [selectedParkingLot, setSelectedParkingLot] = useState(null);
+    const [xLabels, setXLabels] = useState(initialLabels); // Default labels
 
     // Fetch parking lot data
     useEffect(() => {
@@ -30,11 +40,9 @@ function Dashboard() {
     // Fetch camera links when a parking lot is selected
     useEffect(() => {
         if (selectedParkingLot) {
-            console.log('Fetching camera links for:', selectedParkingLot);
             const fetchCameraLinks = async () => {
                 try {
                     const response = await axios.get(`http://localhost:2546/api/user/camera-links/${selectedParkingLot}`);
-                    console.log("Camera links:", response.data); // ตรวจสอบข้อมูลที่ได้รับ
                     setCameraLinks(response.data);
                 } catch (error) {
                     console.error('Error fetching camera links:', error);
@@ -48,15 +56,48 @@ function Dashboard() {
     // Handle parking lot change
     const handleParkingLotChange = async (event) => {
         const selectedID = event.target.value;
-        setSelectedParkingLot(selectedID); // อัปเดต selectedParkingLot
-        console.log("Selected parking lot ID:", selectedID);
-
+        setSelectedParkingLot(selectedID);
         try {
             const response = await axios.get(`http://localhost:2546/api/user/parkinglotdash/${selectedID}`);
             setParkingLotData(response.data);
         } catch (error) {
             console.error('Error fetching parking lot data:', error);
         }
+    };
+
+    // Chart data definition
+    const data = {
+        labels: xLabels,
+        datasets: [
+            {
+                label: 'รถในระบบ',
+                data: Array.from({ length: DATA_COUNT }, () => Math.floor(Math.random() * (NUMBER_CFG.max - NUMBER_CFG.min) + NUMBER_CFG.min)),
+                borderColor: 'rgba(54, 162, 235, 1)',
+                backgroundColor: 'rgba(54, 162, 235, 0.5)',
+            },
+            {
+                label: 'รถบุคคลภายนอก',
+                data: Array.from({ length: DATA_COUNT }, () => Math.floor(Math.random() * (NUMBER_CFG.max - NUMBER_CFG.min) + NUMBER_CFG.min)),
+                borderColor: 'rgba(255, 99, 132, 1)',
+                backgroundColor: 'rgba(255, 99, 132, 0.5)',
+            },
+        ]
+    };
+
+    const handleToDaysClick = () => {
+        setXLabels(ToDaysLabels); // Update x-axis to 'To Days' labels
+    };
+
+    const handleWeeksClick = () => {
+        setXLabels(WeeksLabels); // Update x-axis to 'Weeks' labels
+    };
+
+    const handleMonthsClick = () => {
+        setXLabels(initialLabels); // Update x-axis to 'Months' labels
+    };
+
+    const handleYearsClick = () => {
+        setXLabels(YearsLabels); // Update x-axis to 'Years' labels
     };
 
     return (
@@ -169,19 +210,16 @@ function Dashboard() {
                 </div>
             </section>
 
-            <section className=''>
-                <p>Data Charts📊</p>
-                <div style={{ height: '400px', width: '100%' }}> {/* กำหนดความสูงและความกว้าง */}
-                    <BarChart
-                        series={[
-                            { name: 'Series 1', data: [12, 30, 1, 8, 22, 17] },
-                            { name: 'Series 2', data: [23, 6, 14, 24, 11, 19] },
-                            { name: 'Series 3', data: [23, 6, 14, 24, 11, 19] }
-                        ]}
-                        height={400}  // เพิ่มความสูงให้กับ BarChart
-                    />
+            <div className='mt-5'>
+                <h2>Grap</h2>
+                <Line data={data} />
+                <div className='d-flex justify-center mt-5'>
+                    <button className='btn btn-success' onClick={handleToDaysClick}>To Days</button>
+                    <button className='btn btn-primary' onClick={handleWeeksClick}>Weeks</button>
+                    <button className="btn btn-warning" onClick={handleMonthsClick}>Months</button>
+                    <button className="btn btn-dark" onClick={handleYearsClick}>Years</button>
                 </div>
-            </section>
+            </div>
 
         </div>
     );

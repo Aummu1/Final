@@ -190,14 +190,42 @@ router_inforparking.put('/car/update/:Car_registration', (req, res) => {
     const carRegistration = req.params.Car_registration;
     const { Car_registration, Car_owner, Car_company, Car_model } = req.body;
 
-    const query = 'UPDATE car SET Car_registration = ?, Car_owner = ?, Car_company = ?, Car_model = ? WHERE Car_registration = ?';
-    db.query(query, [Car_registration, Car_owner, Car_company, Car_model, carRegistration], (error, results) => {
-        if (error) {
-            return res.status(500).send(error);
+    // เริ่ม transaction
+    db.beginTransaction((err) => {
+        if (err) {
+            return res.status(500).send('Transaction Error');
         }
-        res.send('Car information updated successfully');
+
+        const updateCarQuery = 'UPDATE car SET Car_registration = ?, Car_owner = ?, Car_company = ?, Car_model = ? WHERE Car_registration = ?';
+        db.query(updateCarQuery, [Car_registration, Car_owner, Car_company, Car_model, carRegistration], (error, results) => {
+            if (error) {
+                return db.rollback(() => {
+                    res.status(500).send(error);
+                });
+            }
+
+            // เมื่ออัปเดตตาราง car เสร็จแล้ว ให้อัปเดตตาราง professor ด้วย
+            const updateProfessorQuery = 'UPDATE professor SET Car_registration = ?, Name_Professor = ? WHERE Car_registration = ?';
+            db.query(updateProfessorQuery, [Car_registration, Car_owner, carRegistration], (error, results) => {
+                if (error) {
+                    return db.rollback(() => {
+                        res.status(500).send(error);
+                    });
+                }
+
+                // Commit transaction
+                db.commit((err) => {
+                    if (err) {
+                        return db.rollback(() => {
+                            res.status(500).send('Commit Error');
+                        });
+                    }
+
+                    res.send('Car and Professor information updated successfully');
+                });
+            });
+        });
     });
 });
-
 
 module.exports = router_inforparking;

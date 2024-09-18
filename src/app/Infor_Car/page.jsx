@@ -55,7 +55,7 @@ function Infor_Car() {
             await Promise.all(selectedRegistrations.map(reg => axios.delete(`http://localhost:2546/api/car/delete/${reg}`)));
             setCarData(carData.filter(data => !data.checked));
             setAllChecked(false); // ยกเลิกเลือกทั้งหมด
-            alert("ลบรถที่เลือกเรียบร้อยแล้ว");
+            alert("Delete Car Successfully");
         } catch (error) {
             console.error("Error deleting cars:", error.message);
         }
@@ -87,7 +87,7 @@ function Infor_Car() {
                 Car_company: editCompany,
                 Car_model: editModel
             });
-            alert("อัปเดตข้อมูลรถสำเร็จ");
+            alert("Updated Car Information Successfully");
             setEditIndex(null);
             setEditRegistration('');
             setEditOwner('');

@@ -45,7 +45,7 @@ function Infor_LED() {
         const selectedIds = selectedData.map(data => data.ID_LED);
 
         if (selectedIds.length === 0) {
-            alert("กรุณาเลือก LED อย่างน้อยหนึ่งรายการเพื่อลบ");
+            alert("Please select one or more LED to delete.");
             return;
         }
 
@@ -53,7 +53,7 @@ function Infor_LED() {
             await Promise.all(selectedIds.map(id => axios.delete(`http://localhost:2546/api/led/delete/${id}`)));
             setLedData(ledData.filter(data => !data.checked));
             setAllChecked(false); // ยกเลิกเลือกทั้งหมด
-            alert("ลบ LED ที่เลือกเรียบร้อยแล้ว");
+            alert("Delete LED Successfully");
         } catch (error) {
             console.error("Error deleting LEDs:", error.message);
         }
@@ -63,7 +63,7 @@ function Infor_LED() {
         try {
             await axios.delete(`http://localhost:2546/api/led/delete/${id}`);
             setLedData(ledData.filter(data => data.ID_LED !== id));
-            alert("ลบ LED สำเร็จ");
+            alert("Delete LED Successfully");
         } catch (error) {
             console.error("Error deleting LED:", error.message);
         }
@@ -83,7 +83,7 @@ function Infor_LED() {
                 Wifi: editWifi,
                 Wifi_Password: editWifiPassword
             });
-            alert("อัปเดตข้อมูล LED สำเร็จ");
+            alert("Updated Wifi and Wifi Password Successfully.");
             setEditIndex(null);
             setEditWifi('');
             setEditWifiPassword('');
