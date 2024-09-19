@@ -10,12 +10,15 @@ const api_user = require("./Router/professor");
 const api_camera = require("./Router/camera");
 const api_parkinglot = require("./Router/parkinglot");
 const api_inforparking = require("./Router/inforparking");
+const api_chart = require("./Router/chart");
 
 app.use("/api", api_user);
 app.use("/api", api_admin);
 app.use("/api", api_camera);
 app.use("/api", api_parkinglot);
 app.use("/api", api_inforparking);
+app.use("/api", api_chart);
+
 //ใช้ Middleware express.json() เพื่อแปลง JSON ที่เข้ามาในคำขอให้เป็น JavaScript object
 app.use(express.json())
 
@@ -35,7 +38,7 @@ const db = mysql.createConnection({
     database: "projects"
 });
 
-//เชื่อมต่อกับฐานข้อมูลและตรวจสอบความสำเร็จ
+// เชื่อมต่อกับฐานข้อมูลและตรวจสอบความสำเร็จ
 // db.connect(err => {
 //     if (err) {
 //         console.error("Error connecting to MySQL database:", err);

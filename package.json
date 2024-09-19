@@ -23,6 +23,7 @@
     "bootstrap-icons-react": "^1.0.0",
     "boxicons": "^2.1.4",
     "chart.js": "^4.4.4",
+    "chartjs-adapter-date-fns": "^3.0.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
