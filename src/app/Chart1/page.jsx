@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Line } from 'react-chartjs-2';
-import axios from 'axios';  // เพิ่ม Axios
+import axios from 'axios';  
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
 function Chart1() {
-    const [xLabels, setXLabels] = useState(Array.from({ length: 24 }, (_, i) => `${i}:00`)); // 24 ชม.
+    const [xLabels, setXLabels] = useState([]); // ช่วงเวลาเป็นนาที
     const [allCarsData, setAllCarsData] = useState([]);  // รถทั้งหมดที่เข้า
     const [externalCarsData, setExternalCarsData] = useState([]);  // รถบุคคลภายนอกที่เข้า
     const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);  // วันที่ที่เลือก
@@ -17,22 +17,46 @@ function Chart1() {
         axios.get(`http://localhost:2546/api/chart/timerecord?date=${selectedDate}`)
             .then(response => {
                 const data = response.data;
-                const allCars = Array(24).fill(0); // ค่าเริ่มต้นของกราฟ
-                const externalCars = Array(24).fill(0);
+                const allCars = {};
+                const externalCars = {};
+                const labels = [];
 
-                // ประมวลผลข้อมูลเพื่อจัดกลุ่มตามชั่วโมง
+                // จัดกลุ่มข้อมูลตามนาที
                 data.forEach(entry => {
-                    const hour = new Date(entry.TimeIn).getHours();
+                    const time = new Date(entry.TimeIn);
+                    const minute = `${time.getHours()}:${String(time.getMinutes()).padStart(2, '0')}`;
+
+                    if (!labels.includes(minute)) {
+                        labels.push(minute);
+                    }
+
+                    if (!allCars[minute]) {
+                        allCars[minute] = 0;
+                        externalCars[minute] = 0;
+                    }
+
                     if (entry.Status === 1 || entry.Status === 0) {
-                        allCars[hour] += 1; // รถทั้งหมดที่เข้า
+                        allCars[minute] += 1; // รถทั้งหมดที่เข้า
                     }
                     if (entry.Status === 0) {
-                        externalCars[hour] += 1; // รถบุคคลภายนอกที่เข้า
+                        externalCars[minute] += 1; // รถบุคคลภายนอกที่เข้า
                     }
                 });
 
-                setAllCarsData(allCars);
-                setExternalCarsData(externalCars);
+                // จัดเรียง labels ตามลำดับเวลา
+                const sortedLabels = labels.sort((a, b) => {
+                    const [aHours, aMinutes] = a.split(':').map(Number);
+                    const [bHours, bMinutes] = b.split(':').map(Number);
+                    return aHours - bHours || aMinutes - bMinutes;
+                });
+
+                // สร้างข้อมูลตามลำดับเวลา
+                const sortedAllCarsData = sortedLabels.map(label => allCars[label] || 0);
+                const sortedExternalCarsData = sortedLabels.map(label => externalCars[label] || 0);
+
+                setXLabels(sortedLabels);
+                setAllCarsData(sortedAllCarsData);
+                setExternalCarsData(sortedExternalCarsData);
             })
             .catch(error => {
                 console.error("Error fetching data:", error);
