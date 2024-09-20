@@ -4,6 +4,8 @@ import Link from "next/link";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import Dashboard from "./Dashboard/page";
 import Footer from "./components/Footer";
+import 'boxicons/css/boxicons.min.css';
+
 // import Header from "./components/Header";
 // import React, { useEffect, useState } from 'react'; 
 // import 'bootstrap/dist/css/bootstrap.min.css';
