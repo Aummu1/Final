@@ -77,24 +77,48 @@ router_parkinglot.post('/user/save-camera', (req, res) => {
     });
 });
 
-router_parkinglot.post('/user/save-parkingspace', (req, res) => {
-    const { points, parkingLotID } = req.body;
+router_parkinglot.post('/user/save-enter-and-parkingspace', (req, res) => {
+    const { enterData, pointsData, parkingLotID } = req.body;
 
-    if (!points || points.length === 0 || !parkingLotID) {
+    if (!enterData || enterData.length === 0 || !parkingLotID) {
         return res.status(400).send('Missing required fields or points not in correct format');
     }
 
-    const pointsJson = JSON.stringify(points);
+    // เก็บข้อมูลช่องแรกใน Enter
+    const enterPolygon = enterData.map(point => [point.x, point.y]);
+    const enterJson = JSON.stringify(enterPolygon);
 
-    const query = 'INSERT INTO parkingspace (points_data, ParkingLot_ID) VALUES (?, ?)';
-    db.query(query, [pointsJson, parkingLotID], (err, result) => {
+    // แทรกข้อมูลตัวแรกเข้าไปในฟิลด์ Enter
+    const queryEnter = 'INSERT INTO parkingspace (Enter, ParkingLot_ID) VALUES (?, ?)';
+    db.query(queryEnter, [enterJson, parkingLotID], (err, result) => {
         if (err) {
-            console.error('Error saving data to parkingspace table:', err);
-            return res.status(500).send('Error saving data to parkingspace table');
+            console.error('Error saving Enter data:', err);
+            return res.status(500).send('Error saving Enter data');
         }
-        res.status(200).send('Points saved successfully');
+
+        // ถ้ามีข้อมูลที่เหลือ ให้แทรกลงใน points_data ทีละแถว
+        if (pointsData.length > 0) {
+            pointsData.forEach((shape, index) => {
+                const pointsJson = JSON.stringify({
+                    id: index,
+                    polygon: shape
+                });
+
+                const queryPoints = 'INSERT INTO parkingspace (points_data, ParkingLot_ID) VALUES (?, ?)';
+                db.query(queryPoints, [pointsJson, parkingLotID], (err, result) => {
+                    if (err) {
+                        console.error('Error saving points data:', err);
+                    }
+                });
+            });
+
+            res.status(200).send('Enter and points data saved successfully');
+        } else {
+            res.status(200).send('Only Enter data saved successfully');
+        }
     });
 });
+
 
 // -----------------------------------get parkinglot----------------------------------------
 

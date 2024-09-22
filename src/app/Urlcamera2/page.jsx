@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
-function UrlCamera() {
+function UrlCamera2() {
     const [url, setUrl] = useState('');
     const [streamUrl, setStreamUrl] = useState('');
     const canvasRef = useRef(null);
@@ -100,21 +100,28 @@ function UrlCamera() {
             const parkingLotResponse = await axios.get('http://localhost:2546/api/user/getParkingLotID');
             const parkingLotID = parkingLotResponse.data.ParkingLot_ID;
     
-            for (const shape of shapes) {
-                const pointsToSave = shape.map(point => ({ x: point.x, y: point.y }));
-                await axios.post('http://localhost:2546/api/user/save-parkingspace', {
-                    points: pointsToSave,
+            if (shapes.length > 0) {
+                // ช่องแรก (shape แรก) เก็บทั้งหมดใน Enter
+                const enterData = shapes[0]; // เก็บข้อมูลทั้งหมดของ shape แรก (ช่องที่ 1)
+    
+                // ช่องที่ 2 และต่อไปเก็บใน points_data
+                const pointsData = shapes.slice(1).map(shape => shape.map(point => [point.x, point.y]));
+    
+                // ส่งข้อมูลทั้งหมดในคำขอเดียว
+                await axios.post('http://localhost:2546/api/user/save-enter-and-parkingspace', {
+                    enterData,  // ช่องที่ 1
+                    pointsData, // ช่องที่ 2 และต่อไป
                     parkingLotID
                 });
-            }
     
-            alert('Lines and points saved successfully!');
+                alert('Lines and points saved successfully!');
+            }
     
         } catch (error) {
             console.error('Error saving data:', error);
             alert('Failed to save data.');
         }
-    };    
+    };          
 
     return (
         <div className="App">
@@ -171,4 +178,4 @@ function UrlCamera() {
     );
 }
 
-export default UrlCamera;
+export default UrlCamera2;
