@@ -43,11 +43,14 @@ router_camera.get('/user/getParkingLotID', (req, res) => {
 
 // Endpoint สำหรับบันทึกข้อมูล RTSP URL และเส้นที่วาด
 router_camera.post('/user/save-data', (req, res) => {
-    const { url, lines, parkingLotID } = req.body;
+    const { url, lines, parkingLotID, size } = req.body;
 
-    if (!url || lines.length === 0 || !parkingLotID) {
-        return res.status(400).send('RTSP URL, lines data, and ParkingLot_ID are required');
+    if (!url || lines.length === 0 || !parkingLotID || !size) {
+        return res.status(400).send('RTSP URL, lines data, ParkingLot_ID, and size are required');
     }
+
+    // แยกขนาดหน้าจอออกเป็นความกว้างและความสูง
+    const [width, height] = size.split('x');
 
     let Line1 = null;
     let Line2 = null;
@@ -65,8 +68,8 @@ router_camera.post('/user/save-data', (req, res) => {
 
     const cameraFunctions = 'Detect License plates';
 
-    const query = 'INSERT INTO camera (rtsp, Line1, Line2, Black, ParkingLot_ID, Camera_Functions) VALUES (?, ?, ?, ?, ?, ?)';
-    db.query(query, [url, Line1, Line2, Black, parkingLotID, cameraFunctions], (err, result) => {
+    const query = 'INSERT INTO camera (rtsp, Line1, Line2, Black, ParkingLot_ID, Camera_Functions, width, height) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
+    db.query(query, [url, Line1, Line2, Black, parkingLotID, cameraFunctions, width, height], (err, result) => {
         if (err) {
             console.error('Error saving data:', err);
             return res.status(500).send('Error saving data');
@@ -74,6 +77,8 @@ router_camera.post('/user/save-data', (req, res) => {
         res.status(200).send({ message: 'Data saved successfully', cameraID: result.insertId });
     });
 });
+
+
 
 router_camera.post('/user/settingtime', (req, res) => {
     const { time } = req.body;

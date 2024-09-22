@@ -98,11 +98,8 @@ router_parkinglot.post('/user/save-enter-and-parkingspace', (req, res) => {
 
         // ถ้ามีข้อมูลที่เหลือ ให้แทรกลงใน points_data ทีละแถว
         if (pointsData.length > 0) {
-            pointsData.forEach((shape, index) => {
-                const pointsJson = JSON.stringify({
-                    id: index,
-                    polygon: shape
-                });
+            pointsData.forEach((shape) => {
+                const pointsJson = JSON.stringify(shape); // เก็บในรูปแบบอาเรย์ของพ้อยท์
 
                 const queryPoints = 'INSERT INTO parkingspace (points_data, ParkingLot_ID) VALUES (?, ?)';
                 db.query(queryPoints, [pointsJson, parkingLotID], (err, result) => {

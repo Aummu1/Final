@@ -145,6 +145,8 @@ function UrlCamera2() {
                 <canvas
                     ref={canvasRef}
                     id="lineCanvas"
+                    width="1920px" // กำหนดความกว้างเป็น 640px
+                    height="1080px" // กำหนดความสูงเป็น 480px
                     onMouseDown={handleMouseDown}
                 ></canvas>
     
@@ -153,6 +155,8 @@ function UrlCamera2() {
                         src={streamUrl}
                         title="RTSP Stream"
                         className="iframe-stream"
+                        width="1920px" // กำหนดความกว้างเป็น 640px
+                        height="1080px" // กำหนดความสูงเป็น 480px
                     ></img>
                 )}
             </div>

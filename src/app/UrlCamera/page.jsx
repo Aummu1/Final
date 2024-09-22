@@ -118,11 +118,13 @@
 
         const handleSave = async () => {
             try {
-                // ดึงข้อมูล ParkingLot_ID ล่าสุด
                 const parkingLotResponse = await axios.get('http://localhost:2546/api/user/getParkingLotID');
                 const parkingLotID = parkingLotResponse.data.ParkingLot_ID;
         
-                // บันทึกข้อมูล RTSP URL และเส้นที่วาดพร้อม ParkingLot_ID
+                // ดึงความละเอียดหน้าจอแยกเป็นความกว้างและความสูง
+                const screenWidth = window.innerWidth;
+                const screenHeight = window.innerHeight;
+                
                 await axios.post('http://localhost:2546/api/user/save-data', {
                     url,
                     lines: dataJson.map(line => ({
@@ -131,17 +133,17 @@
                         x2: line.dataX2[0],
                         y2: line.dataY2[0]
                     })),
-                    parkingLotID // ส่งค่า ParkingLot_ID ไปพร้อมกับข้อมูลที่บันทึก
+                    parkingLotID,
+                    size: `${screenWidth}x${screenHeight}` // ส่งขนาดหน้าจอแยกเป็นความกว้างและความสูง
                 });
         
                 alert('Lines and RTSP URL saved successfully!');
-                setSaved(true); // ตั้งค่า state ว่าข้อมูลถูกบันทึกแล้ว
-        
+                setSaved(true);
             } catch (error) {
                 console.error('Error saving data:', error);
                 alert('Failed to save data.');
             }
-        };
+        };                
 
         return (
             <div className="App">
