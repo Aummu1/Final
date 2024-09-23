@@ -1,11 +1,12 @@
-'use client'
+'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 function UrlCamera2() {
-    const [adminCredentials, setAdminCredentials] = useState(''); // สำหรับ admin credentials
+    const [adminUsername, setAdminUsername] = useState(''); // สำหรับ admin username
+    const [adminCredentials, setAdminCredentials] = useState(''); // สำหรับ admin password
     const [ipAddress, setIpAddress] = useState(''); // สำหรับ IP address
     const [streamUrl, setStreamUrl] = useState('');
     const canvasRef = useRef(null);
@@ -13,6 +14,10 @@ function UrlCamera2() {
     const [shapes, setShapes] = useState([]);
 
     const maxPoints = 4; // จำนวนจุดสูงสุดที่ต้องการ
+
+    const handleAdminUsernameChange = (event) => {
+        setAdminUsername(event.target.value);
+    };
 
     const handleAdminChange = (event) => {
         setAdminCredentials(event.target.value);
@@ -24,8 +29,8 @@ function UrlCamera2() {
 
     const handleStreamLoad = async (event) => {
         event.preventDefault();
-        if (adminCredentials && ipAddress) {
-            const rtspUrl = `rtsp://admin:${adminCredentials}@${ipAddress}/cam/realmonitor?channel=1&subtype=0&unicast=true&proto=Onvif`;
+        if (adminUsername && adminCredentials && ipAddress) {
+            const rtspUrl = `rtsp://${adminUsername}:${adminCredentials}@${ipAddress}/cam/realmonitor?channel=1&subtype=0&unicast=true&proto=Onvif`;
             setStreamUrl(`http://localhost:5000/video_feed?url=${encodeURIComponent(rtspUrl)}`);
             
             // Save camera data here
@@ -45,7 +50,7 @@ function UrlCamera2() {
                 alert('Failed to save camera data.');
             }
         } else {
-            alert('Please enter both Admin credentials and IP address.');
+            alert('Please enter Admin username, Admin password, and IP address.');
         }
     };
 
@@ -59,7 +64,6 @@ function UrlCamera2() {
         setPoints(newPoints);
 
         if (newPoints.length === maxPoints) {
-            // วาดกรอบเมื่อครบ 4 จุด
             const newShape = [...newPoints, newPoints[0]]; // วาดรูปร่างปิด
             setShapes((prevShapes) => [...prevShapes, newShape]);
             setPoints([]); // รีเซ็ตจุดสำหรับการวาดต่อไป
@@ -105,24 +109,21 @@ function UrlCamera2() {
         try {
             const parkingLotResponse = await axios.get('http://localhost:2546/api/user/getParkingLotID');
             const parkingLotID = parkingLotResponse.data.ParkingLot_ID;
-    
+
             if (shapes.length > 0) {
-                // ช่องแรก (shape แรก) เก็บทั้งหมดใน Enter
-                const enterData = shapes[0]; // เก็บข้อมูลทั้งหมดของ shape แรก (ช่องที่ 1)
-    
-                // ช่องที่ 2 และต่อไปเก็บใน points_data
+                const enterData = shapes[0]; // เก็บข้อมูลทั้งหมดของ shape แรก
+
                 const pointsData = shapes.slice(1).map(shape => shape.map(point => [point.x, point.y]));
-    
-                // ส่งข้อมูลทั้งหมดในคำขอเดียว
+
                 await axios.post('http://localhost:2546/api/user/save-enter-and-parkingspace', {
                     enterData,  // ช่องที่ 1
                     pointsData, // ช่องที่ 2 และต่อไป
                     parkingLotID
                 });
-    
+
                 alert('Lines and points saved successfully!');
             }
-    
+
         } catch (error) {
             console.error('Error saving data:', error);
             alert('Failed to save data.');
@@ -132,9 +133,18 @@ function UrlCamera2() {
     return (
         <div className="App">
             <h1 className='mb-4 mt-3'>Camera for detect space</h1>
+            <p>rtsp://admin:Admin123456@192.168.1.107:554/cam/realmonitor?channel=1&subtype=0&unicast=true&proto=Onvif</p>
             <form onSubmit={handleStreamLoad} className="form-inline">
                 <input
                     type="text"
+                    placeholder="Enter Admin Username"
+                    value={adminUsername}
+                    onChange={handleAdminUsernameChange}
+                    className="form-control mr-2"
+                    required
+                />
+                <input
+                    type="password"
                     placeholder="Enter Admin Password"
                     value={adminCredentials}
                     onChange={handleAdminChange}
@@ -153,29 +163,28 @@ function UrlCamera2() {
                     Load Stream
                 </button>
             </form>
-    
+
             <div className="video-container">
                 <canvas
                     ref={canvasRef}
                     id="lineCanvas"
                     onMouseDown={handleMouseDown}
                 ></canvas>
-    
+
                 {streamUrl && (
                     <img
                         src={streamUrl}
                         title="RTSP Stream"
                         className="iframe-stream"
-                        style={{width:"1280px", height:"720px"}}
-                    ></img>
+                        style={{ width: "1280px", height: "720px" }}
+                    />
                 )}
             </div>
-    
+
             <button onClick={handleSave} className="btn btn-success mt-4">
                 <a className='text-decoration-none text-white' href="AdminPage">Save Lines</a>
             </button>
-    
-            {/* การแสดงผลจุดในรูปแบบที่ต้องการ */}
+
             <div className='mt-4 d-flex'>
                 {shapes.map((shape, shapeIndex) => (
                     <div className='mr-5' key={shapeIndex}>

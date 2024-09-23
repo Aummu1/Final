@@ -5,7 +5,8 @@ import axios from 'axios';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 function UrlCamera() {
-    const [admin, setAdmin] = useState(''); // State for Admin credentials
+    const [username, setUsername] = useState(''); // State for username
+    const [password, setPassword] = useState(''); // State for password
     const [ip, setIp] = useState(''); // State for IP address
     const [streamUrl, setStreamUrl] = useState('');
     const canvasRef = useRef(null);
@@ -14,8 +15,12 @@ function UrlCamera() {
     const [startPos, setStartPos] = useState({ x: 0, y: 0 });
     const [saved, setSaved] = useState(false);
 
-    const handleAdminChange = (event) => {
-        setAdmin(event.target.value);
+    const handleUsernameChange = (event) => {
+        setUsername(event.target.value);
+    };
+
+    const handlePasswordChange = (event) => {
+        setPassword(event.target.value);
     };
 
     const handleIpChange = (event) => {
@@ -24,11 +29,11 @@ function UrlCamera() {
 
     const handleSubmit = (event) => {
         event.preventDefault();
-        if (admin && ip) {
-            const rtspUrl = `rtsp://admin:${admin}@${ip}/cam/realmonitor?channel=1&subtype=0&unicast=true&proto=Onvif`;
+        if (username && password && ip) {
+            const rtspUrl = `rtsp://${username}:${password}@${ip}/cam/realmonitor?channel=1&subtype=0&unicast=true&proto=Onvif`;
             setStreamUrl(`http://localhost:5000/video_feed?url=${encodeURIComponent(rtspUrl)}`);
         } else {
-            alert('Please enter both Admin credentials and IP address.');
+            alert('Please enter username, password, and IP address.');
         }
     };
 
@@ -130,7 +135,7 @@ function UrlCamera() {
             const screenHeight = window.innerHeight;
 
             await axios.post('http://localhost:2546/api/user/save-data', {
-                url: `rtsp://admin:${admin}@${ip}/cam/realmonitor?channel=1&subtype=0&unicast=true&proto=Onvif`,
+                url: `rtsp://${username}:${password}@${ip}/cam/realmonitor?channel=1&subtype=0&unicast=true&proto=Onvif`,
                 lines: dataJson.map(line => ({
                     x1: line.dataX1[0],
                     y1: line.dataY1[0],
@@ -152,12 +157,21 @@ function UrlCamera() {
     return (
         <div className="App">
             <h1 className='mb-4 mt-3'>Camera for detect license plates</h1>
+            <p>rtsp://admin:Admin123456@192.168.1.104:554/cam/realmonitor?channel=1&subtype=0&unicast=true&proto=Onvif</p>
             <form onSubmit={handleSubmit} className="form-inline">
                 <input
                     type="text"
-                    placeholder="Enter Admin"
-                    value={admin}
-                    onChange={handleAdminChange}
+                    placeholder="Enter Username"
+                    value={username}
+                    onChange={handleUsernameChange}
+                    className="form-control mr-2"
+                    required
+                />
+                <input
+                    type="password"
+                    placeholder="Enter Password"
+                    value={password}
+                    onChange={handlePasswordChange}
                     className="form-control mr-2"
                     required
                 />
