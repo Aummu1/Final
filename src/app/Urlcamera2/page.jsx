@@ -5,7 +5,8 @@ import axios from 'axios';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 function UrlCamera2() {
-    const [url, setUrl] = useState('');
+    const [adminCredentials, setAdminCredentials] = useState(''); // สำหรับ admin credentials
+    const [ipAddress, setIpAddress] = useState(''); // สำหรับ IP address
     const [streamUrl, setStreamUrl] = useState('');
     const canvasRef = useRef(null);
     const [points, setPoints] = useState([]);
@@ -13,14 +14,19 @@ function UrlCamera2() {
 
     const maxPoints = 4; // จำนวนจุดสูงสุดที่ต้องการ
 
-    const handleChange = (event) => {
-        setUrl(event.target.value);
+    const handleAdminChange = (event) => {
+        setAdminCredentials(event.target.value);
+    };
+
+    const handleIpChange = (event) => {
+        setIpAddress(event.target.value);
     };
 
     const handleStreamLoad = async (event) => {
         event.preventDefault();
-        if (url.startsWith('rtsp://')) {
-            setStreamUrl(`http://localhost:5000/video_feed?url=${encodeURIComponent(url)}`);
+        if (adminCredentials && ipAddress) {
+            const rtspUrl = `rtsp://admin:${adminCredentials}@${ipAddress}/cam/realmonitor?channel=1&subtype=0&unicast=true&proto=Onvif`;
+            setStreamUrl(`http://localhost:5000/video_feed?url=${encodeURIComponent(rtspUrl)}`);
             
             // Save camera data here
             try {
@@ -29,7 +35,7 @@ function UrlCamera2() {
                 
                 const cameraFunctions = 'Detect space';
                 await axios.post('http://localhost:2546/api/user/save-camera', {
-                    url,
+                    url: rtspUrl,
                     parkingLotID,
                     cameraFunctions
                 }); 
@@ -39,7 +45,7 @@ function UrlCamera2() {
                 alert('Failed to save camera data.');
             }
         } else {
-            alert('Please enter a valid RTSP URL.');
+            alert('Please enter both Admin credentials and IP address.');
         }
     };
 
@@ -126,13 +132,20 @@ function UrlCamera2() {
     return (
         <div className="App">
             <h1 className='mb-4 mt-3'>Camera for detect space</h1>
-            <p>rtsp://admin:Admin123456@192.168.1.107:554/cam/realmonitor?channel=1&subtype=0&unicast=true&proto=Onvif</p>
             <form onSubmit={handleStreamLoad} className="form-inline">
                 <input
                     type="text"
-                    placeholder="Enter RTSP URL"
-                    value={url}
-                    onChange={handleChange}
+                    placeholder="Enter Admin Password"
+                    value={adminCredentials}
+                    onChange={handleAdminChange}
+                    className="form-control mr-2"
+                    required
+                />
+                <input
+                    type="text"
+                    placeholder="Enter IP Address"
+                    value={ipAddress}
+                    onChange={handleIpChange}
                     className="form-control mr-2"
                     required
                 />
@@ -145,8 +158,6 @@ function UrlCamera2() {
                 <canvas
                     ref={canvasRef}
                     id="lineCanvas"
-                    width="1920px" // กำหนดความกว้างเป็น 640px
-                    height="1080px" // กำหนดความสูงเป็น 480px
                     onMouseDown={handleMouseDown}
                 ></canvas>
     
@@ -155,8 +166,7 @@ function UrlCamera2() {
                         src={streamUrl}
                         title="RTSP Stream"
                         className="iframe-stream"
-                        width="1920px" // กำหนดความกว้างเป็น 640px
-                        height="1080px" // กำหนดความสูงเป็น 480px
+                        style={{width:"1280px", height:"720px"}}
                     ></img>
                 )}
             </div>

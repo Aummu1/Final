@@ -78,8 +78,6 @@ router_camera.post('/user/save-data', (req, res) => {
     });
 });
 
-
-
 router_camera.post('/user/settingtime', (req, res) => {
     const { time } = req.body;
 
