@@ -4,23 +4,22 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'boxicons/css/boxicons.min.css';
-import { signOut } from 'next-auth/react';
 import Footer from '../components/Footer';
 import Navbar from '../components/Navbar';
 
 function ResetPassword() {
     const [password, setPassword] = useState("");
-    const [email, setEmail] = useState(""); // กรอก email ที่ต้องการเปลี่ยนรหัสผ่าน
+    const [username, setUsername] = useState(""); // กรอก username ที่ต้องการเปลี่ยนรหัสผ่าน
 
     const register = async (event) => {
         event.preventDefault(); // Prevent the default form submission
 
         try {
             const response = await axios.post(
-                "http://localhost:2546/api/user/resetpassword",
+                "https://apib17.bd2-cloud.net/api/admin/resetpassword",
                 { 
                     password: password,
-                    email: email, // ส่ง email ไปพร้อมกับรหัสผ่าน
+                    username: username, 
                 },
                 {
                     headers: {
@@ -28,13 +27,31 @@ function ResetPassword() {
                     },
                 }
             );
-            alert("User Reset Password Successfully.");
-            console.log("Reset password result:", response.data);
-            await signOut({ callbackUrl: "/" }); // Redirect after successful password reset
+
+            // เช็คว่าคำตอบที่ได้มี success เป็น true หรือไม่
+            if (response.data.success) {
+                alert("User Reset Password Successfully.");
+                console.log("Reset password result:", response.data);
+
+                handleLogout(); 
+                
+            } else {
+                alert(response.data.message); // แสดงข้อความจาก server หากไม่สำเร็จ
+            }
         } catch (error) {
             console.error("Error resetting password:", error.message);
             alert("Error resetting password. Please try again.");
         }
+    };
+
+    const handleLogout = () => {
+        // ลบข้อมูลผู้ใช้จาก localStorage หรือ sessionStorage
+        localStorage.removeItem('username'); // แก้ไขให้ตรงตามที่คุณเก็บข้อมูลผู้ใช้
+        // หรือ
+        // sessionStorage.removeItem('user');
+
+        // เปลี่ยนเส้นทางไปยังหน้าหลัก
+        window.location.href = "https://appb17.bd2-cloud.net/ForAdmin";
     };
 
     return (
@@ -52,14 +69,14 @@ function ResetPassword() {
                                 <h2 className='d-flex justify-center mb-5'>Reset Password</h2>
                                 <div className="form-floating mb-5">
                                     <input 
-                                        type="email" 
+                                        type="text" 
                                         className="form-control" 
-                                        id="floatingEmail" 
-                                        placeholder="Email"
-                                        value={email}
-                                        onChange={(e) => setEmail(e.target.value)}
+                                        id="floatingUsername" 
+                                        placeholder="Username"
+                                        value={username}
+                                        onChange={(e) => setUsername(e.target.value)}
                                     />
-                                    <label htmlFor="floatingEmail">Email</label>
+                                    <label htmlFor="floatingEmail">Username</label>
                                 </div>
                                 <div className="form-floating mb-5">
                                     <input 

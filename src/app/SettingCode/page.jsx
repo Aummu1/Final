@@ -14,7 +14,7 @@ function SettingCode() {
     const handleSubmit = async (event) => {
         event.preventDefault();
         try {
-            const response = await axios.post('http://localhost:2546/api/user/saveParkingLot', {
+            const response = await axios.post('https://apib17.bd2-cloud.net/api/user/saveParkingLot', {
                 parkingLotName,
                 wifi,
                 wifiPassword

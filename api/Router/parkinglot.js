@@ -1,15 +1,17 @@
 const express = require("express");
 const router_parkinglot = express.Router();
+const app = express();
 // const database = require("../Database/db_module");
 const mysql = require("mysql");
 // const port = 2546;
 const cors = require('cors');
+const bodyParser = require('body-parser');
 
 router_parkinglot.use(express.json())
 
 router_parkinglot.use(
     cors({
-    origin: "http://localhost:3000", // Wildcard is NOT for Production
+    origin: "*", // Wildcard is NOT for Production
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     credentials: true,
     })
@@ -17,8 +19,8 @@ router_parkinglot.use(
 
 const db = mysql.createConnection({
     host: "localhost",
-    user: "root",
-    password: "",
+    user: "admin",
+    password: "admin",
     database: "projects"
 });
 
@@ -29,6 +31,9 @@ db.connect(err => {
         console.log("Connected to MySQL database");
     }
 });
+
+// ใช้ body-parser middleware
+app.use(bodyParser.json());
 
 router_parkinglot.post('/user/saveParkingLot', (req, res) => {
     const { parkingLotName, wifi, wifiPassword } = req.body;
@@ -77,45 +82,54 @@ router_parkinglot.post('/user/save-camera', (req, res) => {
     });
 });
 
-router_parkinglot.post('/user/save-enter-and-parkingspace', (req, res) => {
+router_parkinglot.post('/user/save-enter-and-parkingspace', async (req, res) => {
     const { enterData, pointsData, parkingLotID } = req.body;
 
-    if (!enterData || enterData.length === 0 || !parkingLotID) {
+    if (!pointsData || pointsData.length === 0 || !parkingLotID) {
         return res.status(400).send('Missing required fields or points not in correct format');
     }
 
-    // เก็บข้อมูลช่องแรกใน Enter
-    const enterPolygon = enterData.map(point => [point.x, point.y]);
-    const enterJson = JSON.stringify(enterPolygon);
+    try {
+        // ถ้ามี enterData ให้บันทึกข้อมูล Enter
+        if (enterData && enterData.length > 0) {
+            const enterPolygon = enterData.map(point => [point.x, point.y]);
+            const enterJson = JSON.stringify(enterPolygon);
 
-    // แทรกข้อมูลตัวแรกเข้าไปในฟิลด์ Enter
-    const queryEnter = 'INSERT INTO parkingspace (Enter, ParkingLot_ID) VALUES (?, ?)';
-    db.query(queryEnter, [enterJson, parkingLotID], (err, result) => {
-        if (err) {
-            console.error('Error saving Enter data:', err);
-            return res.status(500).send('Error saving Enter data');
+            const queryEnter = 'INSERT INTO parkingspace (Enter, ParkingLot_ID) VALUES (?, ?)';
+            await new Promise((resolve, reject) => {
+                db.query(queryEnter, [enterJson, parkingLotID], (err, result) => {
+                    if (err) {
+                        console.error('Error saving Enter data:', err);
+                        return reject(err); // ส่ง error กลับ
+                    }
+                    resolve(result);
+                });
+            });
         }
 
-        // ถ้ามีข้อมูลที่เหลือ ให้แทรกลงใน points_data ทีละแถว
-        if (pointsData.length > 0) {
-            pointsData.forEach((shape) => {
-                const pointsJson = JSON.stringify(shape); // เก็บในรูปแบบอาเรย์ของพ้อยท์
+        // บันทึกข้อมูล pointsData
+        for (const shape of pointsData) {
+            const pointsJson = JSON.stringify(shape);
 
-                const queryPoints = 'INSERT INTO parkingspace (points_data, ParkingLot_ID) VALUES (?, ?)';
+            const queryPoints = 'INSERT INTO parkingspace (points_data, ParkingLot_ID) VALUES (?, ?)';
+            await new Promise((resolve, reject) => {
                 db.query(queryPoints, [pointsJson, parkingLotID], (err, result) => {
                     if (err) {
                         console.error('Error saving points data:', err);
+                        return reject(err); // ส่ง error กลับ
                     }
+                    resolve(result);
                 });
             });
-
-            res.status(200).send('Enter and points data saved successfully');
-        } else {
-            res.status(200).send('Only Enter data saved successfully');
         }
-    });
-});
 
+        res.status(200).send('Enter and points data saved successfully');
+
+    } catch (error) {
+        console.error('Error during saving process:', error);
+        res.status(500).send('Error saving data');
+    }
+});
 
 // -----------------------------------get parkinglot----------------------------------------
 
@@ -164,7 +178,7 @@ router_parkinglot.get('/user/parkinglotdash/:id', (req, res) => {
 
 router_parkinglot.get('/user/camera-links/:parkingLotId', (req, res) => {
     const { parkingLotId } = req.params;
-    const query = 'SELECT rtsp FROM camera WHERE ParkingLot_ID = ?';
+    const query = 'SELECT rtsp FROM camera WHERE ParkingLot_ID = ? LIMIT 10'; // เพิ่ม LIMIT
 
     db.query(query, [parkingLotId], (err, results) => {
         if (err) {
@@ -173,6 +187,57 @@ router_parkinglot.get('/user/camera-links/:parkingLotId', (req, res) => {
         }
         res.status(200).json(results);
     });
+});
+
+// Get Points Data by Parking Lot ID
+router_parkinglot.get('/user/points_data/:id', (req, res) => {
+    const parkingLotID = req.params.id;
+
+    // Query to fetch all points data for the selected parking lot
+    const query = `
+        SELECT points_data 
+        FROM parkingspace 
+        WHERE ParkingLot_ID = ? AND points_data IS NOT NULL`; // เพิ่มเงื่อนไขเพื่อไม่ให้ดึงข้อมูลที่เป็น null
+
+    db.query(query, [parkingLotID], (err, results) => {
+        if (err) {
+            console.error('Error fetching points data from parkingspace table:', err);
+            return res.status(500).send('Error fetching points data');
+        }
+
+        if (results.length === 0) {
+            return res.status(404).send('No points data found for this parking lot');
+        }
+
+        // แยกข้อมูล points_data และทำเป็น array
+        const allPointsData = results.flatMap(result => result.points_data || []); // ใช้ flatMap เพื่อแยกข้อมูลและกรองข้อมูล null
+
+        // ส่งข้อมูลทั้งหมดกลับไปที่ client
+        res.status(200).json({ points_data: allPointsData });
+    });
+});
+
+router_parkinglot.post('/user/savepointsdata', async (req, res) => {
+    const { parkingLotID, pointsData } = req.body;
+
+    if (!parkingLotID || !pointsData || pointsData.length === 0) {
+        return res.status(400).send('Missing parkingLotID or pointsData');
+    }
+
+    try {
+        const query = 'INSERT INTO parkingspace (points_data, ParkingLot_ID) VALUES (?, ?)';
+        const pointsJson = JSON.stringify(pointsData);
+        db.query(query, [pointsJson, parkingLotID], (err, result) => {
+            if (err) {
+                console.error('Error saving points data:', err);
+                return res.status(500).send('Error saving points data');
+            }
+            res.status(200).send('Points data saved successfully');
+        });
+    } catch (error) {
+        console.error('Error during saving process:', error);
+        res.status(500).send('Error saving points data');
+    }
 });
 
 

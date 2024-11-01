@@ -7,7 +7,7 @@ router_inforparking.use(express.json());
 
 router_inforparking.use(
     cors({
-        origin: "http://localhost:3000",
+        origin: "*",
         methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
         credentials: true,
     })
@@ -15,8 +15,8 @@ router_inforparking.use(
 
 const db = mysql.createConnection({
     host: "localhost",
-    user: "root",
-    password: "",
+    user: "admin",
+    password: "admin",
     database: "projects"
 });
 
@@ -73,6 +73,44 @@ router_inforparking.put("/parkinglot/update/:id", (req, res) => {
         res.status(200).send("อัปเดตชื่อที่จอดรถสำเร็จ");
     });
 });
+
+router_inforparking.get("/parkingspace/getdataparkingspace", (req, res) => {
+    const query = 'SELECT ParkingLot_ID, ParkingSpace_ID, points_data FROM parkingspace'; // เพิ่ม ParkingSpace_ID
+    db.query(query, (err, result) => {
+        if (err) {
+            console.error("Error fetching data from MySQL database:", err);
+            res.status(500).send("เกิดข้อผิดพลาดขณะดึงข้อมูลจากฐานข้อมูล");
+            return;
+        }
+        res.status(200).json(result);
+    });
+});
+
+router_inforparking.delete("/parkingspace/delete/:id", (req, res) => {
+    const parkingSpaceId = req.params.id;
+    
+    if (!parkingSpaceId) {
+        console.error("ParkingSpace_ID is undefined");
+        return res.status(400).send("Invalid ParkingSpace_ID");
+    }
+
+    console.log("กำลังลบที่จอดรถที่มี ID:", parkingSpaceId);
+    const query = 'DELETE FROM parkingspace WHERE ParkingSpace_ID = ?';
+
+    db.query(query, [parkingSpaceId], (err, result) => {
+        if (err) {
+            console.error("Error deleting parking lot from MySQL database:", err);
+            res.status(500).send("เกิดข้อผิดพลาดขณะลบข้อมูลที่จอดรถ");
+            return;
+        }
+        if (result.affectedRows === 0) {
+            res.status(404).send("ไม่พบที่จอดรถที่ต้องการลบ");
+            return;
+        }
+        res.status(200).send("ลบข้อมูลที่จอดรถสำเร็จ");
+    });
+});
+
 
 router_inforparking.get("/camera/getdatacamera", (req, res) => {
     const query = 'SELECT ParkingLot_ID, ID_Camera, RTSP, Camera_Functions FROM camera';

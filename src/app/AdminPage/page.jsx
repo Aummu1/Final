@@ -9,6 +9,7 @@ import Footer from "../components/Footer";
 import React, { useState, useEffect } from 'react';
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import PrivateRoute from "../PrivateRoute/page";
 
 function AdminPage() {
     const router = useRouter()
@@ -45,6 +46,7 @@ function AdminPage() {
     }, []);
     if(mode == 1){
         return (
+            <PrivateRoute>
             <div className="">
                 <div className="row">
                     <div className={`col-${mode === 1 ? 1 : mode === 2 ? 1 : 2}`}>
@@ -57,10 +59,12 @@ function AdminPage() {
                     <Footer />
                 </div>
             </div>
+            </PrivateRoute>
         );
     }
     else{
         return (
+            <PrivateRoute>
             <div className="container">
                 <div className="row">
                     <div className={`col-${mode === 1 ? 0 : mode === 2 ? 1 : 2 }`}>
@@ -73,6 +77,7 @@ function AdminPage() {
                     </div>
                 </div>
             </div>
+             </PrivateRoute>
         );
     }
 }

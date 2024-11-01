@@ -6,6 +6,7 @@ import Navbar from "../components/Navbar";
 import Infor_Camera from '../Infor_Camera/page';
 import Infor_LED from '../Infor_LED/page';
 import Infor_Car from '../Infor_Car/page';
+import Infor_Space from '../Infor_Space/page';
 
 function Infor_ParkingLot() {
     const [parkingData, setParkingData] = useState([]);
@@ -20,7 +21,7 @@ function Infor_ParkingLot() {
     }, []);
 
     const fetchParkingData = () => {
-        axios.get('http://localhost:2546/api/parkinglot/getdataparkinglot')
+        axios.get('https://apib17.bd2-cloud.net/api/parkinglot/getdataparkinglot')
             .then(response => {
                 setParkingData(response.data);
             })
@@ -66,7 +67,7 @@ function Infor_ParkingLot() {
 
         try {
             // ลบหลายรายการพร้อมกัน
-            await Promise.all(selectedIds.map(id => axios.delete(`http://localhost:2546/api/parkinglot/delete/${id}`)));
+            await Promise.all(selectedIds.map(id => axios.delete(`https://apib17.bd2-cloud.net/api/parkinglot/delete/${id}`)));
             // อัพเดตข้อมูลหลังจากลบ
             setParkingData(parkingData.filter(data => !data.checked));
             setAllChecked(false); // ยกเลิกการเลือกทั้งหมด
@@ -79,7 +80,7 @@ function Infor_ParkingLot() {
 
     const deleteParkingLot = async (id) => {
         try {
-            await axios.delete(`http://localhost:2546/api/parkinglot/delete/${id}`);
+            await axios.delete(`https://apib17.bd2-cloud.net/api/parkinglot/delete/${id}`);
             setParkingData(parkingData.filter(data => data.ParkingLot_ID !== id));
             alert("Deleted Parking Lot Successfully.");
         } catch (error) {
@@ -102,7 +103,7 @@ function Infor_ParkingLot() {
         setParkingData(updatedData);
 
         try {
-            await axios.put(`http://localhost:2546/api/parkinglot/update/${parkingData[editIndex].ParkingLot_ID}`, {
+            await axios.put(`https://apib17.bd2-cloud.net/api/parkinglot/update/${parkingData[editIndex].ParkingLot_ID}`, {
                 ParkingLot_Name: editName
             });
             alert("Updated Parking Lot Name Successfully.");
@@ -206,6 +207,7 @@ function Infor_ParkingLot() {
                     </ul>
                 </div>
             </div>
+            <Infor_Space />
             <Infor_Camera />
             <Infor_LED />
             <Infor_Car />

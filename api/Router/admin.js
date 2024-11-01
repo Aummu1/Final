@@ -2,12 +2,17 @@ const express = require("express");
 const router_admin = express.Router();
 const mysql = require("mysql");
 const cors = require('cors');
+const bcrypt = require('bcrypt');
+
+const CLIENT_ID = '2006415575';
+const CLIENT_SECRET = 'fea3a835616adf5b21d199186f7b9873';
+const REDIRECT_URI = 'https://appb17.bd2-cloud.net/AdminPage';
 
 router_admin.use(express.json())
 
 router_admin.use(
     cors({
-    origin: "http://localhost:3000",
+    origin: "*",
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     credentials: true,
     })
@@ -15,8 +20,8 @@ router_admin.use(
 
 const db = mysql.createConnection({
     host: "localhost",
-    user: "root",
-    password: "",
+    user: "admin",
+    password: "admin",
     database: "projects"
 });
 
@@ -26,93 +31,17 @@ db.connect(err => {
     } else {
         console.log("Connected to MySQL database");
     }
-});
-
-router_admin.post("/user/check-email", async (req, res) => {
-    const body = req.body;
-    console.log(body);
-    db.query(`SELECT * FROM admin WHERE Gmail = ?`, [body.email], (err, result) => {
-        if (err) {
-            console.error("Error fetching data from MySQL database:", err);
-            return res.status(404).send("An error occurred while fetching data from the database");
-        }
-        if (result.length > 0) {
-            result[0].found = true;
-            res.status(200).json(result);
-        } else {
-            res.status(200).json([{ found: false }]);
-        }
-    });    
-    });
-    router_admin.get("/user/get-all", async (req, res) => {});
-    router_admin.put("/user/update", async (req, res) => {});
-    router_admin.get("/user", (req, res) => {
-        res.send("User Router").status(200);
-    });
-
-    router_admin.post("/user/updateAdmin", async (req, res) => {
-        let body = req.body;
-        console.log(body);
+}); 
     
-        // if (!body.username || !body.password) {
-        //     res.status(400).send("All fields are required: username, password");
-        //     return;
-        // }
-    
-        try {
-            const query = 'UPDATE admin SET Username = ?, Password = ?, Name_Admin = ?, Image = ? WHERE Gmail = ?';
-            db.query(query, [body.username, body.password, body.name, body.img, body.mail], (err, result) => {
-                if (err) {
-                    console.error("Error updating data in MySQL database:", err);
-                    res.status(500).send("An error occurred while updating data in the database");
-                    return;
-                }
-                console.log("User Updated Successfully.");
-                res.status(200).send("User Updated Successfully.");
-            });
-        } catch (error) {
-            console.error("Error Updating User.\n", error);
-            res.status(500).send("Error Updating User.");
-        }
-    });
-
-    router_admin.post("/user/CheckAdminUser", async (req, res) => {
-        const body = req.body;
-        console.log("Received request body:", body); // ตรวจสอบข้อมูลที่ได้รับ
-        
-        try {
-            const query = 'SELECT * FROM admin WHERE Username = ? AND Password = ?';
-            db.query(query, [body.username, body.password], (err, result) => {
-                if (err) {
-                    console.error("Error querying the database:", err);
-                    return res.status(500).send("An error occurred while querying the database");
-                }
-                //console.log(result)
-                if (result.length > 0) {
-                    console.log("Admin user found.");
-                    result[0].status = 200
-                    res.json(result);
-                } else {
-                    console.log("Admin user not found.");
-                    res.json([{"data":"Admin user not found.",
-                        "status" : 404
-                    }]);
-                }
-            });
-        } catch (error) {
-            console.error("Error checking admin user:", error);
-            res.status(500).send("Error checking admin user.");
-        }
-    }); 
-    
-    router_admin.post("/user/resetpassword", async (req, res) => {
+    // --------------------------------------------reset password----------------------------------------------
+    router_admin.post("/admin/resetpassword", async (req, res) => {
         let body = req.body;
         console.log(body);
     
         try {
             // ตรวจสอบว่าอีเมลที่ให้มามีอยู่ในระบบหรือไม่
-            const checkQuery = 'SELECT * FROM admin WHERE Gmail = ?';
-            db.query(checkQuery, [body.email], (err, result) => {
+            const checkQuery = 'SELECT * FROM admin WHERE Username = ?';
+            db.query(checkQuery, [body.username], async (err, result) => {
                 if (err) {
                     console.error("Error checking email in MySQL database:", err);
                     res.status(500).send({ success: false, message: "An error occurred while checking email in the database" });
@@ -126,8 +55,11 @@ router_admin.post("/user/check-email", async (req, res) => {
                 }
     
                 // อีเมลพบในระบบ, อัปเดตรหัสผ่าน
-                const updateQuery = 'UPDATE admin SET Password = ? WHERE Gmail = ?';
-                db.query(updateQuery, [body.password, body.email], (err, result) => {
+                const saltRounds = 10; // จำนวนรอบในการแฮช
+                const hashedPassword = await bcrypt.hash(body.password, saltRounds); // แฮชรหัสผ่านที่ผู้ใช้กรอก
+    
+                const updateQuery = 'UPDATE admin SET Password = ? WHERE Username = ?';
+                db.query(updateQuery, [hashedPassword, body.username], (err, result) => {
                     if (err) {
                         console.error("Error updating data in MySQL database:", err);
                         res.status(500).send({ success: false, message: "An error occurred while updating data in the database" });
@@ -142,9 +74,88 @@ router_admin.post("/user/check-email", async (req, res) => {
             res.status(500).send({ success: false, message: "Error Updating User." });
         }
     });
+
+    // ---------------------------------------------check password------------------------------------------------
+    router_admin.post('/admin/login', async (req, res) => {
+    const { username, password } = req.body;
+
+    // ตรวจสอบว่ามี username และ password หรือไม่
+    if (!username || !password) {
+        return res.status(400).json({ success: false, message: 'Please enter both username and password' });
+    }
+
+    // ค้นหา username ในฐานข้อมูล
+    const query = 'SELECT * FROM admin WHERE Username = ?';
+    db.query(query, [username], async (err, results) => {
+        if (err) {
+            console.error('Error fetching user from database:', err);
+            return res.status(500).json({ success: false, message: 'Server error' });
+        }
+
+        if (results.length === 0) {
+            // ไม่มี username ที่ตรงกัน
+            return res.status(401).json({ success: false, message: 'Invalid username or password' });
+        }
+
+        const user = results[0];
+
+        // ตรวจสอบ password โดยใช้ bcrypt.compare เพื่อตรวจสอบรหัสผ่านที่แฮชแล้ว
+        const isPasswordValid = await bcrypt.compare(password, user.Password);
+        if (isPasswordValid) {
+            return res.status(200).json({ success: true, message: 'Login successful' });
+        } else {
+            // รหัสผ่านไม่ถูกต้อง
+            return res.status(401).json({ success: false, message: 'Invalid username or password' });
+        }
+    });
+});
+   
+
+    router_admin.post('/login/callback', async (req, res) => {
+        const { code, state } = req.body;
     
+        try {
+            // แลกเปลี่ยน code กับ access token
+            const tokenResponse = await axios.post('https://api.line.me/oauth2/v2.1/token', null, {
+                params: {
+                    grant_type: 'authorization_code',
+                    code: code,
+                    redirect_uri: "https://appb17.bd2-cloud.net/AdminPage",
+                    client_id: 2006415575,
+                    client_secret: 'fea3a835616adf5b21d199186f7b9873', // เพิ่ม ' ' รอบๆ Client Secret
+                },
+            });
     
+            const accessToken = tokenResponse.data.access_token;
     
+            // ใช้ access token เพื่อดึงข้อมูลผู้ใช้
+            const userResponse = await axios.get('https://api.line.me/v2/profile', {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`,
+                },
+            });
+    
+            // เช็คว่ามีข้อมูลผู้ใช้หรือไม่
+            if (!userResponse.data || !userResponse.data.displayName) {
+                throw new Error('ไม่พบข้อมูลผู้ใช้');
+            }
+    
+            console.log("User response data:", userResponse.data); 
+            
+            // ส่งข้อมูลผู้ใช้กลับไปยัง frontend
+            res.json({
+                success: true,
+                name: userResponse.data.displayName, // ส่งชื่อผู้ใช้กลับไป
+                userId: userResponse.data.userId,
+            });
+        } catch (error) {
+            console.error('Error during callback processing:', error.message);
+            res.status(500).json({
+                success: false,
+                message: error.message || 'เกิดข้อผิดพลาดระหว่างการล็อกอิน',
+            });
+        }
+    });    
     
 
 module.exports = router_admin;

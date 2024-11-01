@@ -8,7 +8,7 @@ router_user.use(express.json())
 
 router_user.use(
     cors({
-    origin: "http://localhost:3000", // Wildcard is NOT for Production
+    origin: "*", // Wildcard is NOT for Production
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     credentials: true,
     })
@@ -16,8 +16,8 @@ router_user.use(
 
 const db = mysql.createConnection({
     host: "localhost",
-    user: "root",
-    password: "",
+    user: "admin",
+    password: "admin",
     database: "projects"
 });
 

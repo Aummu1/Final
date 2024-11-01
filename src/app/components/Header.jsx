@@ -14,7 +14,7 @@
 //     useEffect(() => {
 //         const fetchParkingLots = async () => {
 //             try {
-//                 const response = await axios.get('http://localhost:2546/api/user/option');
+//                 const response = await axios.get('https://apib17.bd2-cloud.net/api/user/option');
 //                 setParkingLots(response.data);
 //             } catch (error) {
 //                 console.error('Error fetching parking lots:', error);

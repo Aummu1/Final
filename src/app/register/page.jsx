@@ -526,10 +526,10 @@ function Register() {
         }
 
         // ตรวจสอบว่ามีทั้งตัวเลขและตัวอักษร
-        const hasLetter = /^[a-zA-Zก-ฮ]/.test(registrationReg);
+        const hasLetter = /[a-zA-Zก-ฮ]/.test(registrationReg);
         const hasDigit = /\d/.test(registrationReg);
 
-        if (!hasLetter || !hasDigit) {
+        if (!hasLetter || !hasDigit) {  
             setError("ทะเบียนรถต้องประกอบด้วยตัวอักษรและตัวเลขอย่างน้อยหนึ่งตัว");
             alert("ทะเบียนรถต้องประกอบด้วยตัวอักษรและตัวเลขอย่างน้อยหนึ่งตัว");
             return;
@@ -537,9 +537,9 @@ function Register() {
 
         try {
             const response = await axios.post(
-                "http://localhost:2546/api/user/portdataform", 
+                "https://apib17.bd2-cloud.net/api/user/portdataform", 
                 
-                //ส่งข้อมูลไปยัง http://localhost:2546/api/user/register โดยมีข้อมูลที่ประกอบด้วย name, faculty, model, และ registration
+                //ส่งข้อมูลไปยัง https://apib17.bd2-cloud.net/api/user/register โดยมีข้อมูลที่ประกอบด้วย name, faculty, model, และ registration
                 { 
                     name: nameReg, faculty: facultyReg, company: companyReg, model: modelReg, registration: registrationReg 
                 },
@@ -567,15 +567,15 @@ function Register() {
     //ตรวจสอบชื่อ
     const handleNameChange = (e) => {
         const value = e.target.value;
-        if (/^[a-zA-Zก-ฮ\s]*$/.test(value)) { // ตรวจสอบว่าเป็นตัวอักษรและช่องว่างเท่านั้น
+        if (/^[a-zA-Zก-ฮะ-์\s]*$/.test(value)) { // เพิ่มช่วง Unicode สำหรับสระและวรรณยุกต์ภาษาไทย
             setnameReg(value);
         }
-    };
+    };    
 
     //ตรวจสอบคณะ
     const handleFacultyChange = (e) => {
         const value = e.target.value;
-        if (/^[a-zA-Zก-ฮ\s]*$/.test(value)) { // ตรวจสอบว่าเป็นตัวอักษรและช่องว่างเท่านั้น
+        if (/^[a-zA-Zก-ฮะ-์\s]*$/.test(value)) { // ตรวจสอบว่าเป็นตัวอักษรและช่องว่างเท่านั้น
             setfaculty(value);
         }
     };
@@ -671,7 +671,7 @@ function Register() {
                             </div>
                             {/* Submit button */}
                             <div className="d-grid gap-2">
-                                <button type="button" className="btn btn-primary btn-lg btn-block" onClick={register}>Sign in</button>
+                                <button type="button" className="btn btn-primary btn-lg btn-block" onClick={register}>ลงทะเบียนรถ</button>
                             </div>
                         </form>
                     </div>

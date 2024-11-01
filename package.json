@@ -18,6 +18,7 @@
     "@mui/x-charts": "^7.1.1",
     "@types/react-select": "^5.0.1",
     "axios": "^1.6.8",
+    "bcrypt": "^5.1.1",
     "bootstrap": "^5.3.3",
     "bootstrap-icons": "^1.11.3",
     "bootstrap-icons-react": "^1.0.0",

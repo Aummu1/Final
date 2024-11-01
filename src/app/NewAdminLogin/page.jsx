@@ -33,7 +33,7 @@ function NewAdminLogin() {
 
         try {
             const response = await axios.post(
-                "http://localhost:2546/api/user/updateAdmin", 
+                "https://apib17.bd2-cloud.net/api/user/updateAdmin", 
                 { 
                     username, 
                     password,

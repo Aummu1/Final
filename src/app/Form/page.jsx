@@ -16,7 +16,7 @@ function DataTable() {
     }, []);
 
     const fetchUserData = () => {
-        axios.get('http://localhost:2546/api/user/getdataform')
+        axios.get('https://apib17.bd2-cloud.net/api/user/getdataform')
             .then(response => {
                 setUserData(response.data);
             })
@@ -28,7 +28,7 @@ function DataTable() {
     //ฟังก์ชันลบผู้ใช้
     const deleteUser = async (userId) => {
         try {
-            await axios.delete(`http://localhost:2546/api/user/delete/${userId}`);
+            await axios.delete(`https://apib17.bd2-cloud.net/api/user/delete/${userId}`);
             setUserData(userData.filter(user => user.id !== userId));
         } catch (error) {
             console.error("Error deleting data:", error);
@@ -43,7 +43,7 @@ function DataTable() {
 
         try {
             //Promise.all จะทำการลบผู้ใช้ทั้งหมดที่มี id อยู่ใน selectedIds โดยใช้ axios.delete สำหรับแต่ละ id
-            await Promise.all(selectedIds.map(id => axios.delete(`http://localhost:2546/api/user/delete/${id}`)));
+            await Promise.all(selectedIds.map(id => axios.delete(`https://apib17.bd2-cloud.net/api/user/delete/${id}`)));
             setUserData(userData.filter(user => !user.checked));
         } catch (error) {
             console.error("Error deleting data:", error);
@@ -68,7 +68,7 @@ function DataTable() {
             };
             console.log("Payload to be sent:", payload); // เพิ่มการ log payload ที่จะถูกส่ง
             const response = await axios.post(
-                "http://localhost:2546/api/user/postconfirmdata", 
+                "https://apib17.bd2-cloud.net/api/user/postconfirmdata", 
                 payload,
                 {
                     headers: {
@@ -92,7 +92,7 @@ function DataTable() {
 
         try {
             await Promise.all(selectedUsers.map(user => axios.post(
-                "http://localhost:2546/api/user/postconfirmdata", 
+                "https://apib17.bd2-cloud.net/api/user/postconfirmdata", 
                 { 
                     id: user.id,
                     name: user.Name_Professor, 

@@ -2,49 +2,58 @@
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'boxicons/css/boxicons.min.css';
-import { signIn } from "next-auth/react";
-import React, { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from "next/navigation";
 import axios from 'axios'; 
 
 function Login() {
-    const router = useRouter()
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
-    const [rememberMe, setRememberMe] = useState(true);
+    const [rememberMe, setRememberMe] = useState(false);
+    const router = useRouter();
 
-    const handleRememberMeChange = () => {
-        setRememberMe(!rememberMe);
-    }
+    // ฟังก์ชันสร้างค่า state และ nonce แบบสุ่ม
+    const generateRandomString = (length) => {
+        const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        let result = '';
+        for (let i = 0; i < length; i++) {
+            result += characters.charAt(Math.floor(Math.random() * characters.length));
+        }
+        return result;
+    };
+
+    const handleLineLogin = () => {
+        const state = generateRandomString(16);
+        const nonce = generateRandomString(16);
+        const lineLoginUrl = `https://access.line.me/oauth2/v2.1/authorize?response_type=code&client_id=2006415575&redirect_uri=${encodeURIComponent("https://appb17.bd2-cloud.net/AdminPage")}&state=${state}&scope=profile%20openid&nonce=${nonce}`;
+    
+        window.location.href = lineLoginUrl;
+    };
+      
 
     const handleSignin = async () => {
-        console.log(username, password);
         try {
-            const result = await signIn("credentials", {
-            username,
-            password,
-            redirect: false,
+            const response = await axios.post("https://apib17.bd2-cloud.net/api/admin/login", {
+                username,
+                password
             });
-            
-            if (result.error || (result.status && result.status !== 200)) {
-            console.error(result.error || result.data[0].data);
-            alert(result.error || result.data[0].data);
+    
+            if (response.data.success) {
+                localStorage.setItem("username", username);
+                router.push("/AdminPage");
             } else {
-            router.replace("/AdminPage");
+                alert(response.data.message || "Invalid username or password");
             }
         } catch (error) {
-            console.log(error);
+            console.error("Login error:", error);
+            if (error.response && error.response.data && error.response.data.message) {
+                alert(error.response.data.message);
+            } else {
+                alert("An error occurred during login. Please try again.");
+            }
         }
-    }
+    };     
 
-    const handleGoogle = async () => {
-        try {
-            await signIn("google", { callbackUrl: "/AdminPage" });
-        } catch (error) {
-            console.log(error);
-        }
-    }  
-    
     return (
         <section className="vh-100">
             <div className="container py-5 h-100">
@@ -78,28 +87,24 @@ function Login() {
                                 />
                                 <label htmlFor="floatingPassword">Password</label>
                             </div>
-                            <div className="d-flex justify-content-around align-items-center mb-4">
-                                <div className="form-check">
-                                    <input className="form-check-input" type="checkbox" value="" id="form1Example3" checked={rememberMe} onChange={handleRememberMeChange} />
-                                    <label className="form-check-label" htmlFor="form1Example3"> Remember me </label>
-                                </div>
-                                <a href="#!">Forgot password?</a>
+                            <div className="d-flex justify-content-end align-items-center mb-4">
+                                <a href="/Forget">Forgot password?</a>
                             </div>
                             <div className="d-grid gap-2">
                                 <button type="button" className="btn btn-primary btn-lg btn-block" onClick={handleSignin}>Sign in</button>        
                             </div>
-                            <div className="divider d-flex align-items-center my-4">
+                            {/* <div className="divider d-flex align-items-center my-4">
                                 <p className="text-center fw-bold mx-3 mb-0 text-muted">OR</p>
-                            </div>
+                            </div> */}
                         </form>
-                        <button
-                            type="submit"
-                            className="bg-white border border-black text-black w-full p-2 flex flex-row justify-center gap-2 items-center rounded-sm hover:bg-gray-200 duration-100 ease-in-out"
-                            onClick={handleGoogle}
+                        {/* <button
+                            type="button"
+                            className="bg-success text-black w-full p-2 flex flex-row justify-center gap-2 items-center rounded-sm hover:bg-gray-200 duration-100 ease-in-out"
+                            onClick={handleLineLogin}
                         >
-                            <i className='bx bxl-google bx-lg'></i>
-                            Google
-                        </button>
+                            <i className='bx bxl-line bx-lg'></i>
+                            Login with Line
+                        </button> */}
                     </div>
                 </div>
             </div>

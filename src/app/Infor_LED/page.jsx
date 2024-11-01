@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState, useEffect } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import axios from 'axios';
@@ -16,7 +18,7 @@ function Infor_LED() {
     }, []);
 
     const fetchLedData = () => {
-        axios.get('http://localhost:2546/api/led/getdataled')
+        axios.get('https://apib17.bd2-cloud.net/api/led/getdataled')
             .then(response => {
                 setLedData(response.data);
             })
@@ -50,7 +52,7 @@ function Infor_LED() {
         }
 
         try {
-            await Promise.all(selectedIds.map(id => axios.delete(`http://localhost:2546/api/led/delete/${id}`)));
+            await Promise.all(selectedIds.map(id => axios.delete(`https://apib17.bd2-cloud.net/api/led/delete/${id}`)));
             setLedData(ledData.filter(data => !data.checked));
             setAllChecked(false); // ยกเลิกเลือกทั้งหมด
             alert("Delete LED Successfully");
@@ -61,7 +63,7 @@ function Infor_LED() {
 
     const deleteLed = async (id) => {
         try {
-            await axios.delete(`http://localhost:2546/api/led/delete/${id}`);
+            await axios.delete(`https://apib17.bd2-cloud.net/api/led/delete/${id}`);
             setLedData(ledData.filter(data => data.ID_LED !== id));
             alert("Delete LED Successfully");
         } catch (error) {
@@ -79,7 +81,7 @@ function Infor_LED() {
         setLedData(updatedData);
 
         try {
-            await axios.put(`http://localhost:2546/api/led/update/${ledData[editIndex].ID_LED}`, {
+            await axios.put(`https://apib17.bd2-cloud.net/api/led/update/${ledData[editIndex].ID_LED}`, {
                 Wifi: editWifi,
                 Wifi_Password: editWifiPassword
             });

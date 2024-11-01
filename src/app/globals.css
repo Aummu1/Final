@@ -469,7 +469,7 @@ background: #eee;
 }
 
 .form-control {
-    width: 300px;
+    width: 30%;
 }
 
 .btn {
@@ -493,8 +493,8 @@ background: #eee;
     position: absolute;
     top: 0;
     left: 0;
-    width: 1280px;
-    height: 720px;
+    width: 1920px;
+    height: 1080px;
     cursor: crosshair;
     pointer-events: auto;
     z-index: 10;
@@ -523,4 +523,13 @@ background: #eee;
   .floating-button:hover {
     background-color: #0056b3; /* สีฟ้าเข้มเมื่อ hover */
   }
-  
+
+/* เพิ่มความกว้างของ input */
+@media (max-width: 375px) {
+    .chart-container {
+        height: 400px; /* เพิ่มความสูงของกราฟในขนาดหน้าจอนี้ */
+    }
+}
+
+
+

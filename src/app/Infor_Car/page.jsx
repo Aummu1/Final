@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState, useEffect } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import axios from 'axios';
@@ -18,7 +20,7 @@ function Infor_Car() {
     }, []);
 
     const fetchCarData = () => {
-        axios.get('http://localhost:2546/api/car/getdatacar')
+        axios.get('https://apib17.bd2-cloud.net/api/car/getdatacar')
             .then(response => {
                 setCarData(response.data);
             })
@@ -52,7 +54,7 @@ function Infor_Car() {
         }
 
         try {
-            await Promise.all(selectedRegistrations.map(reg => axios.delete(`http://localhost:2546/api/car/delete/${reg}`)));
+            await Promise.all(selectedRegistrations.map(reg => axios.delete(`https://apib17.bd2-cloud.net/api/car/delete/${reg}`)));
             setCarData(carData.filter(data => !data.checked));
             setAllChecked(false); // ยกเลิกเลือกทั้งหมด
             alert("Delete Car Successfully");
@@ -81,7 +83,7 @@ function Infor_Car() {
         setCarData(updatedData);
 
         try {
-            await axios.put(`http://localhost:2546/api/car/update/${carData[editIndex].Car_registration}`, {
+            await axios.put(`https://apib17.bd2-cloud.net/api/car/update/${carData[editIndex].Car_registration}`, {
                 Car_registration: editRegistration,
                 Car_owner: editOwner,
                 Car_company: editCompany,

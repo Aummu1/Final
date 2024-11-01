@@ -7,7 +7,7 @@ router_camera.use(express.json());
 
 router_camera.use(
     cors({
-        origin: "http://localhost:3000", // ควรกำหนดเป็นชื่อโดเมนของแอปพลิเคชันคุณใน Production
+        origin: "*", // ควรกำหนดเป็นชื่อโดเมนของแอปพลิเคชันคุณใน Production
         methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
         credentials: true,
     })
@@ -16,8 +16,8 @@ router_camera.use(
 // การเชื่อมต่อฐานข้อมูล MySQL
 const db = mysql.createConnection({
     host: "localhost",
-    user: "root",
-    password: "",
+    user: "admin",
+    password: "admin",
     database: "projects"
 });
 
@@ -46,6 +46,7 @@ router_camera.post('/user/save-data', (req, res) => {
     const { url, lines, parkingLotID, size } = req.body;
 
     if (!url || lines.length === 0 || !parkingLotID || !size) {
+        console.log('Missing required fields:', { url, lines, parkingLotID, size });
         return res.status(400).send('RTSP URL, lines data, ParkingLot_ID, and size are required');
     }
 
@@ -68,23 +69,66 @@ router_camera.post('/user/save-data', (req, res) => {
 
     const cameraFunctions = 'Detect License plates';
 
-    const query = 'INSERT INTO camera (rtsp, Line1, Line2, Black, ParkingLot_ID, Camera_Functions, width, height) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
-    db.query(query, [url, Line1, Line2, Black, parkingLotID, cameraFunctions, width, height], (err, result) => {
+    // ตรวจสอบว่า URL ซ้ำหรือไม่
+    const checkUrlQuery = 'SELECT COUNT(*) AS count FROM camera WHERE rtsp = ?';
+    db.query(checkUrlQuery, [url], (err, results) => {
         if (err) {
-            console.error('Error saving data:', err);
-            return res.status(500).send('Error saving data');
+            console.error('Error checking URL:', err);
+            return res.status(500).send('Error checking URL');
         }
-        res.status(200).send({ message: 'Data saved successfully', cameraID: result.insertId });
+
+        console.log('URL count check:', results[0].count);
+
+        if (results[0].count > 0) {
+            console.log('RTSP URL already exists in the database:', url);
+            return res.status(400).send('RTSP URL already exists');
+        }
+
+        // ถ้า URL ไม่มีอยู่ ให้บันทึกข้อมูล
+        const insertQuery = 'INSERT INTO camera (rtsp, Line1, Line2, Black, ParkingLot_ID, Camera_Functions, width, height) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
+        db.query(insertQuery, [url, Line1, Line2, Black, parkingLotID, cameraFunctions, width, height], (err, result) => {
+            if (err) {
+                console.error('Error saving data:', err);
+                return res.status(500).send('Error saving data');
+            }
+            console.log('Data saved successfully, cameraID:', result.insertId);
+            res.status(200).send({ message: 'Data saved successfully', cameraID: result.insertId });
+        });
     });
 });
 
+router_camera.post('/user/check-rtsp-url', (req, res) => {
+    const { url } = req.body;
+
+    if (!url) {
+        return res.status(400).send('RTSP URL is required');
+    }
+
+    // ตรวจสอบว่า URL ซ้ำหรือไม่
+    const checkUrlQuery = 'SELECT COUNT(*) AS count FROM camera WHERE rtsp = ?';
+    db.query(checkUrlQuery, [url], (err, results) => {
+        if (err) {
+            console.error('Error checking URL:', err);
+            return res.status(500).send('Error checking URL');
+        }
+
+        if (results[0].count > 0) {
+            console.log('RTSP URL already exists in the database:', url);
+            return res.status(400).send('RTSP URL already exists');
+        }
+
+        res.status(200).send('RTSP URL is unique');
+    });
+});
+
+
+
 router_camera.post('/user/settingtime', (req, res) => {
-    const { time } = req.body;
+    const { time, parkingLotID } = req.body; // รับ parkingLotID มาด้วย
 
     try {
-        // ตรวจสอบว่ามีข้อมูลอยู่แล้วหรือไม่
-        const selectQuery = 'SELECT * FROM timesetting';
-        db.query(selectQuery, (err, results) => {
+        const selectQuery = 'SELECT * FROM timesetting WHERE ParkingLot_ID = ?';
+        db.query(selectQuery, [parkingLotID], (err, results) => {
             if (err) {
                 console.error("Error checking time setting:", err);
                 res.status(500).send("Error checking time setting");
@@ -92,10 +136,8 @@ router_camera.post('/user/settingtime', (req, res) => {
             }
 
             if (results.length > 0) {
-                // ถ้ามีข้อมูลแล้ว ให้ทำการอัปเดตข้อมูลใหม่
-                const updateQuery = 'UPDATE timesetting SET time = ? WHERE timesetting_id = ?';
-                const timesetting_id = results[0].timesetting_id; // ใช้ id ของข้อมูลที่มีอยู่
-                db.query(updateQuery, [time, timesetting_id], (err, result) => {
+                const updateQuery = 'UPDATE timesetting SET time = ? WHERE ParkingLot_ID = ?';
+                db.query(updateQuery, [time, parkingLotID], (err, result) => {
                     if (err) {
                         console.error("Error updating time setting:", err);
                         res.status(500).send("Error updating time setting");
@@ -105,9 +147,8 @@ router_camera.post('/user/settingtime', (req, res) => {
                     res.status(200).send("Time setting updated successfully.");
                 });
             } else {
-                // ถ้าไม่มีข้อมูล ให้ทำการเพิ่มข้อมูลใหม่
-                const insertQuery = 'INSERT INTO timesetting (time) VALUES (?)';
-                db.query(insertQuery, [time], (err, result) => {
+                const insertQuery = 'INSERT INTO timesetting (time, ParkingLot_ID) VALUES (?, ?)';
+                db.query(insertQuery, [time, parkingLotID], (err, result) => {
                     if (err) {
                         console.error("Error inserting time setting:", err);
                         res.status(500).send("Error inserting time setting");
@@ -123,7 +164,6 @@ router_camera.post('/user/settingtime', (req, res) => {
         res.status(500).send("Error Settingtime");
     }
 });
-
 
 
 module.exports = router_camera;

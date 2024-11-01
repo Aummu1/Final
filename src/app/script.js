@@ -54,7 +54,7 @@ export const updateModeText = () => {
 // const axios = require('axios');
 
 // function test() {
-//     axios.get('http://localhost:2546/')
+//     axios.get('https://apib17.bd2-cloud.net/')
 //         .then(response => {
 //             console.log(response.data);
 //             document.getElementById("test").innerText = response.data;

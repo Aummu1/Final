@@ -5,15 +5,14 @@ import axios from 'axios';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 function UrlCamera2() {
-    const [adminUsername, setAdminUsername] = useState(''); // สำหรับ admin username
-    const [adminCredentials, setAdminCredentials] = useState(''); // สำหรับ admin password
-    const [ipAddress, setIpAddress] = useState(''); // สำหรับ IP address
+    const [adminUsername, setAdminUsername] = useState('');
+    const [adminCredentials, setAdminCredentials] = useState('');
+    const [ipAddress, setIpAddress] = useState('');
     const [streamUrl, setStreamUrl] = useState('');
     const canvasRef = useRef(null);
-    const [points, setPoints] = useState([]);
-    const [shapes, setShapes] = useState([]);
-
-    const maxPoints = 4; // จำนวนจุดสูงสุดที่ต้องการ
+    const [points, setPoints] = useState([]); //เก็บจุดที่วาด
+    const [shapes, setShapes] = useState([]); //เก็บรูปร่างที่วาด
+    const maxPoints = 4;
 
     const handleAdminUsernameChange = (event) => {
         setAdminUsername(event.target.value);
@@ -28,41 +27,63 @@ function UrlCamera2() {
     };
 
     const handleStreamLoad = async (event) => {
-        event.preventDefault();
+        event.preventDefault(); //event.preventDefault() ใช้เพื่อหยุดการรีเฟรชของฟอร์ม
+
         if (adminUsername && adminCredentials && ipAddress) {
             const rtspUrl = `rtsp://${adminUsername}:${adminCredentials}@${ipAddress}/cam/realmonitor?channel=1&subtype=0&unicast=true&proto=Onvif`;
-            setStreamUrl(`http://localhost:5000/video_feed?url=${encodeURIComponent(rtspUrl)}`);
-            
-            // Save camera data here
+            setStreamUrl(`https://camera.bd2-cloud.net/video_feed?url=${encodeURIComponent(rtspUrl)}`);
+
             try {
-                const parkingLotResponse = await axios.get('http://localhost:2546/api/user/getParkingLotID');
+                const parkingLotResponse = await axios.get('https://apib17.bd2-cloud.net/api/user/getParkingLotID');
                 const parkingLotID = parkingLotResponse.data.ParkingLot_ID;
-                
+
                 const cameraFunctions = 'Detect space';
-                await axios.post('http://localhost:2546/api/user/save-camera', {
-                    url: rtspUrl,
-                    parkingLotID,
-                    cameraFunctions
-                }); 
-                
+
+                const checkUrlResponse = await axios.post('https://apib17.bd2-cloud.net/api/user/check-rtsp-url', {
+                    url: rtspUrl //ส่ง rtspUrl ไปยัง API เพื่อตรวจสอบว่ามีอยู่ในฐานข้อมูลหรือไม่
+                });
+
+                //บันทึกข้อมูลกล้อง
+                if (checkUrlResponse.status === 200) {
+                    console.log('RTSP URL is unique, proceeding to save camera data.');
+
+                    const saveCameraResponse = await axios.post('https://apib17.bd2-cloud.net/api/user/save-camera', {
+                        url: rtspUrl,
+                        parkingLotID,
+                        cameraFunctions
+                    });
+
+                    if (saveCameraResponse.status === 200) {
+                        alert('Camera data saved successfully!');
+                    }
+                }
             } catch (error) {
-                console.error('Error saving camera data:', error);
-                alert('Failed to save camera data.');
+                if (error.response && error.response.status === 400) {
+                    alert('RTSP URL already exists in the database.');
+                } else {
+                    console.error('Error:', error);
+                    alert('Failed to save data.');
+                }
             }
         } else {
             alert('Please enter Admin username, Admin password, and IP address.');
         }
     };
 
+
+    //ฟังก์ชันนี้จะทำงานเมื่อผู้ใช้คลิกที่ canvas
+    //คำนวณตำแหน่งของเมาส์ใน canvas
     const handleMouseDown = (event) => {
         const canvas = canvasRef.current;
         const rect = canvas.getBoundingClientRect();
         const mouseX = Math.round(event.clientX - rect.left);
         const mouseY = Math.round(event.clientY - rect.top);
 
+        //บันทึกจุดที่คลิก
         const newPoints = [...points, { x: mouseX, y: mouseY }];
         setPoints(newPoints);
 
+        // วาดรูปปิดเมื่อถึงจำนวนจุดสูงสุด
         if (newPoints.length === maxPoints) {
             const newShape = [...newPoints, newPoints[0]]; // วาดรูปร่างปิด
             setShapes((prevShapes) => [...prevShapes, newShape]);
@@ -70,20 +91,22 @@ function UrlCamera2() {
         }
     };
 
+
+    //เมื่อ points หรือ shapes เปลี่ยนแปลงจะทำให้ canvas ถูกอัปเดต
     useEffect(() => {
         const canvas = canvasRef.current;
         const ctx = canvas.getContext('2d');
         if (canvas) {
             canvas.width = canvas.clientWidth;
             canvas.height = canvas.clientHeight;
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
+            ctx.clearRect(0, 0, canvas.width, canvas.height);  //กำหนดขนาด canvas และล้างพื้นที่วาด
+            
+            //วาดรูปร่างที่บันทึก
             ctx.beginPath();
-            ctx.strokeStyle = 'black';
+            ctx.strokeStyle = 'black';  //เริ่มต้นการวาดด้วยการตั้งค่า strokeStyle และ lineWidth
             ctx.lineWidth = 2;
 
-            // วาดเส้นที่มีอยู่
-            for (const shape of shapes) {
+            for (const shape of shapes) {  //วาดรูปร่างที่เก็บไว้ใน shapes
                 ctx.moveTo(shape[0].x, shape[0].y);
                 for (let i = 1; i < shape.length; i++) {
                     ctx.lineTo(shape[i].x, shape[i].y);
@@ -92,7 +115,7 @@ function UrlCamera2() {
             }
             ctx.stroke();
 
-            // วาดเส้นที่กำลังวาด
+            //วาดจุดปัจจุบัน
             ctx.beginPath();
             if (points.length > 0) {
                 ctx.moveTo(points[0].x, points[0].y);
@@ -103,32 +126,36 @@ function UrlCamera2() {
             ctx.stroke();
             ctx.closePath();
         }
-    }, [points, shapes]);
+    }, [points, shapes]); //วาดเส้นจากจุดที่เก็บไว้ใน points หากมี
+
 
     const handleSave = async () => {
         try {
-            const parkingLotResponse = await axios.get('http://localhost:2546/api/user/getParkingLotID');
+            const parkingLotResponse = await axios.get('https://apib17.bd2-cloud.net/api/user/getParkingLotID');
             const parkingLotID = parkingLotResponse.data.ParkingLot_ID;
-
+            
+            //บันทึกข้อมูลเข้าและจุดที่วาด
             if (shapes.length > 0) {
-                const enterData = shapes[0]; // เก็บข้อมูลทั้งหมดของ shape แรก
-
+                // แยก enterData จาก shapes[0] และเอาที่เหลือเป็น pointsData
+                const enterData = shapes[0].map(point => ({ x: point.x, y: point.y }));
                 const pointsData = shapes.slice(1).map(shape => shape.map(point => [point.x, point.y]));
-
-                await axios.post('http://localhost:2546/api/user/save-enter-and-parkingspace', {
-                    enterData,  // ช่องที่ 1
-                    pointsData, // ช่องที่ 2 และต่อไป
+    
+                await axios.post('https://apib17.bd2-cloud.net/api/user/save-enter-and-parkingspace', {
+                    enterData, // ส่ง enterData
+                    pointsData, // ส่ง pointsData
                     parkingLotID
                 });
-
-                alert('Lines and points saved successfully!');
+    
+                alert('Enter and parking spaces saved successfully!');
+                setTimeout(() => {
+                    window.location.href = 'https://appb17.bd2-cloud.net/AdminPage';
+                }, 1000);
             }
-
         } catch (error) {
             console.error('Error saving data:', error);
             alert('Failed to save data.');
         }
-    };          
+    };    
 
     return (
         <div className="App">
@@ -176,22 +203,23 @@ function UrlCamera2() {
                         src={streamUrl}
                         title="RTSP Stream"
                         className="iframe-stream"
-                        style={{ width: "1280px", height: "720px" }}
+                        style={{ width: "1920px", height: "1080px" }}
                     />
                 )}
             </div>
 
             <button onClick={handleSave} className="btn btn-success mt-4">
-                <a className='text-decoration-none text-white' href="AdminPage">Save Lines</a>
+                Save Lines
             </button>
 
+            {/* แสดงข้อมูลรูปร่าง */}
             <div className='mt-4 d-flex'>
                 {shapes.map((shape, shapeIndex) => (
                     <div className='mr-5' key={shapeIndex}>
                         <h3>ช่องที่ {shapeIndex + 1}</h3>
                         {shape.map((point, pointIndex) => (
                             <p key={pointIndex}>
-                                จุดที่ {pointIndex + 1} : {"{"} "x": {point.x}, "y": {point.y} {"}"}
+                                จุดที่ {pointIndex + 1} - X: {point.x}, Y: {point.y}
                             </p>
                         ))}
                     </div>

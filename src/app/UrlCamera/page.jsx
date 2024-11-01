@@ -15,6 +15,7 @@ function UrlCamera() {
     const [startPos, setStartPos] = useState({ x: 0, y: 0 });
     const [saved, setSaved] = useState(false);
 
+    //ฟังก์ชันการจัดการการเปลี่ยนแปลง (Change Handlers)
     const handleUsernameChange = (event) => {
         setUsername(event.target.value);
     };
@@ -27,31 +28,38 @@ function UrlCamera() {
         setIp(event.target.value);
     };
 
+    //ฟังก์ชันการส่งข้อมูล (Submit Handler)
     const handleSubmit = (event) => {
         event.preventDefault();
         if (username && password && ip) {
             const rtspUrl = `rtsp://${username}:${password}@${ip}/cam/realmonitor?channel=1&subtype=0&unicast=true&proto=Onvif`;
-            setStreamUrl(`http://localhost:5000/video_feed?url=${encodeURIComponent(rtspUrl)}`);
+            setStreamUrl(`https://camera.bd2-cloud.net/video_feed?url=${encodeURIComponent(rtspUrl)}`);
         } else {
             alert('Please enter username, password, and IP address.');
         }
     };
 
+
+    //ฟังก์ชันเริ่มวาด (Mouse Down)
+    //ฟังก์ชันนี้จะถูกเรียกเมื่อผู้ใช้คลิกที่ canvas
     const handleMouseDown = (event) => {
-        const canvas = canvasRef.current;
+        const canvas = canvasRef.current; //ใช้ canvasRef เพื่อเข้าถึง canvas และคำนวณตำแหน่งของ mouse relative กับ canvas
         const rect = canvas.getBoundingClientRect();
         const mouseX = Math.round(event.clientX - rect.left);
         const mouseY = Math.round(event.clientY - rect.top);
 
         setStartPos({ x: mouseX, y: mouseY });
-        setDrawing(true);
+        setDrawing(true); //อัปเดตตำแหน่งเริ่มต้น (startPos) และเปลี่ยนสถานะ drawing เป็น true เพื่อบอกว่ากำลังวาดอยู่
     };
 
+
+    //ฟังก์ชันการเคลื่อนที่ของ mouse (Mouse Move)
+    //ฟังก์ชันนี้จะถูกเรียกเมื่อผู้ใช้เคลื่อนที่ mouse ขณะกดปุ่ม
     const handleMouseMove = (event) => {
-        if (!drawing) return;
+        if (!drawing) return; //หากไม่ได้อยู่ในโหมดวาด (drawing เป็น false) จะไม่ทำอะไร
 
         const canvas = canvasRef.current;
-        const ctx = canvas.getContext('2d');
+        const ctx = canvas.getContext('2d'); //ใช้ ctx เพื่อวาดเส้นที่มีอยู่ใน dataJson และเส้นที่กำลังวาดอยู่
         const rect = canvas.getBoundingClientRect();
         const mouseX = Math.round(event.clientX - rect.left);
         const mouseY = Math.round(event.clientY - rect.top);
@@ -81,6 +89,9 @@ function UrlCamera() {
         ctx.closePath();
     };
 
+
+    //ฟังก์ชันหยุดวาด (Mouse Up)
+    //ฟังก์ชันนี้จะถูกเรียกเมื่อผู้ใช้ปล่อยปุ่ม mouse
     const handleMouseUp = (event) => {
         if (!drawing) return;
 
@@ -90,7 +101,7 @@ function UrlCamera() {
         const mouseY = Math.round(event.clientY - rect.top);
 
         setDrawing(false);
-
+        //ใช้คำนวณตำแหน่ง mouse ใหม่และอัปเดต dataJson ด้วยข้อมูลของเส้นที่วาดใหม่
         setDataJson((prevState) => [
             ...prevState,
             {
@@ -102,8 +113,10 @@ function UrlCamera() {
         ]);
     };
 
-    useEffect(() => {
-        const canvas = canvasRef.current;
+
+    //การวาดข้อมูลที่เก็บไว้ใน canvas
+    useEffect(() => { //ใช้ useEffect เพื่อตรวจสอบเมื่อ dataJson เปลี่ยนแปลง
+        const canvas = canvasRef.current; 
         const ctx = canvas.getContext('2d');
         if (canvas) {
             canvas.width = canvas.clientWidth;
@@ -124,17 +137,19 @@ function UrlCamera() {
             ctx.stroke();
             ctx.closePath();
         }
-    }, [dataJson]);
+    }, [dataJson]); //วาดเส้นทั้งหมดที่เก็บไว้ใน dataJson บน canvas
 
+
+    //ฟังก์ชันการบันทึกข้อมูล
     const handleSave = async () => {
         try {
-            const parkingLotResponse = await axios.get('http://localhost:2546/api/user/getParkingLotID');
+            const parkingLotResponse = await axios.get('https://apib17.bd2-cloud.net/api/user/getParkingLotID');
             const parkingLotID = parkingLotResponse.data.ParkingLot_ID;
-
+    
             const screenWidth = window.innerWidth;
             const screenHeight = window.innerHeight;
-
-            await axios.post('http://localhost:2546/api/user/save-data', {
+    
+            const response = await axios.post('https://apib17.bd2-cloud.net/api/user/save-data', {
                 url: `rtsp://${username}:${password}@${ip}/cam/realmonitor?channel=1&subtype=0&unicast=true&proto=Onvif`,
                 lines: dataJson.map(line => ({
                     x1: line.dataX1[0],
@@ -145,16 +160,21 @@ function UrlCamera() {
                 parkingLotID,
                 size: `${screenWidth}x${screenHeight}`
             });
-
+    
             alert('Lines and RTSP URL saved successfully!');
             setSaved(true);
         } catch (error) {
-            console.error('Error saving data:', error);
-            alert('Failed to save data.');
+            if (error.response && error.response.status === 400) {
+                // แสดง alert เมื่อพบข้อมูลซ้ำ
+                alert('RTSP URL already exists in the database.');
+            } else {
+                console.error('Error saving data:', error);
+                alert('Failed to save data.');
+            }
         }
-    };
+    };    
 
-    return (
+    return (    
         <div className="App">
             <h1 className='mb-4 mt-3'>Camera for detect license plates</h1>
             <p>rtsp://admin:Admin123456@192.168.1.104:554/cam/realmonitor?channel=1&subtype=0&unicast=true&proto=Onvif</p>
@@ -202,7 +222,7 @@ function UrlCamera() {
                         src={streamUrl}
                         title="RTSP Stream"
                         className="iframe-stream"
-                        style={{ width: "1280px", height: "720px" }}
+                        style={{ width: "1920px", height: "1080px" }}
                     ></img>
                 )}
             </div>

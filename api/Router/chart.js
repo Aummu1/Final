@@ -7,7 +7,7 @@ router_chart.use(express.json())
 
 router_chart.use(
     cors({
-    origin: "http://localhost:3000",
+    origin: "*",
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     credentials: true,
     })
@@ -15,8 +15,8 @@ router_chart.use(
 
 const db = mysql.createConnection({
     host: "localhost",
-    user: "root",
-    password: "",
+    user: "admin",
+    password: "admin",
     database: "projects"
 });
 

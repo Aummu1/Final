@@ -1,8 +1,11 @@
+"use client";
+
 import React, { useEffect, useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Line } from 'react-chartjs-2';
 import axios from 'axios';  
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
+
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
@@ -16,7 +19,7 @@ function Chart2() {
     // ฟังก์ชันดึงข้อมูลจาก Backend เมื่อเปลี่ยนวันที่
     useEffect(() => {
         if (startDate && endDate) {
-            axios.get(`http://localhost:2546/api/chart/timerecord-2?start=${startDate}&end=${endDate}`)
+            axios.get(`https://apib17.bd2-cloud.net/api/chart/timerecord-2?start=${startDate}&end=${endDate}`)
                 .then(response => {
                     const data = response.data;
                     const dates = [];
@@ -85,10 +88,15 @@ function Chart2() {
         ]
     };
 
+    const options = {
+        responsive: true,
+        maintainAspectRatio: false,
+    };
+
     return (
         <div className="z-2">
             <div className='d-flex align-items-center mt-4 mb-4'>
-                <p className="fs-1 font-bold">Chart</p>
+                <p className="fs-1 font-bold">ดูประวัติการจอดรถแบบกำหนดช่วง</p>
                 {/* ปุ่มเลือกวันที่เริ่มต้น */}
                 <input
                     className="ml-5 mb-3 form-control custom-date-input rounded w-25 h-25"
@@ -104,7 +112,9 @@ function Chart2() {
                     onChange={e => setEndDate(e.target.value)}
                 />
             </div>
-            <Line data={data} />
+            <div className="chart-container" style={{ height: '500px' }}>
+                <Line data={data} options={options} />
+            </div>
         </div>
     );
 }

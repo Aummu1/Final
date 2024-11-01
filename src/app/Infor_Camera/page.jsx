@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState, useEffect } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import axios from 'axios';
@@ -16,7 +18,7 @@ function Infor_Camera() {
     }, []);
 
     const fetchCameraData = () => {
-        axios.get('http://localhost:2546/api/camera/getdatacamera')
+        axios.get('https://apib17.bd2-cloud.net/api/camera/getdatacamera')
             .then(response => {
                 setCameraData(response.data);
             })
@@ -50,7 +52,7 @@ function Infor_Camera() {
         }
 
         try {
-            await Promise.all(selectedIds.map(id => axios.delete(`http://localhost:2546/api/camera/delete/${id}`)));
+            await Promise.all(selectedIds.map(id => axios.delete(`https://apib17.bd2-cloud.net/api/camera/delete/${id}`)));
             setCameraData(cameraData.filter(data => !data.checked));
             setAllChecked(false); // Uncheck the 'select all' checkbox
             alert("Deleted Selected Cameras Successfully.");
@@ -61,7 +63,7 @@ function Infor_Camera() {
 
     const deleteCamera = async (id) => {
         try {
-            await axios.delete(`http://localhost:2546/api/camera/delete/${id}`);
+            await axios.delete(`https://apib17.bd2-cloud.net/api/camera/delete/${id}`);
             setCameraData(cameraData.filter(data => data.ID_Camera !== id));
             alert("Deleted Camera Successfully.");
         } catch (error) {
@@ -79,7 +81,7 @@ function Infor_Camera() {
         setCameraData(updatedData);
 
         try {
-            await axios.put(`http://localhost:2546/api/camera/update/${cameraData[editIndex].ID_Camera}`, {
+            await axios.put(`https://apib17.bd2-cloud.net/api/camera/update/${cameraData[editIndex].ID_Camera}`, {
                 rtsp: editRTSP,  // ใช้ชื่อ field ตรงตามฐานข้อมูล
                 Camera_Functions: editCameraFunctions
             });
@@ -100,19 +102,19 @@ function Infor_Camera() {
     };
 
 
-    const handleDelete = () => {
+    const handleDelete = (id) => {
         const selectedData = cameraData.filter(data => data.checked);
-
+    
         if (selectedData.length > 0) {
-            deleteSelectedCamera();
+            deleteSelectedCamera(); // ลบกล้องที่ถูกเลือก
         } else {
-            const id = cameraData.find(data => data.ParkingLot_ID === data.ParkingLot_ID)?.ID_Camera;
             if (id) {
-                deleteCamera(id);
+                deleteCamera(id); // ลบกล้องที่ไม่ใช้ checkbox
+            } else {
+                alert("กรุณาเลือกกล้องเพื่อลบ"); // แจ้งเตือนถ้าไม่เลือกอะไรเลย
             }
         }
     };
-
 
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -202,10 +204,9 @@ function Infor_Camera() {
                                                 <button className="btn btn-primary btn-sm" onClick={() => startEdit(index)}>
                                                     Edit
                                                 </button>
-
                                                 <button
                                                     className="btn btn-danger btn-sm"
-                                                    onClick={() => handleDelete()}
+                                                    onClick={() => handleDelete(data.ID_Camera)} // ส่ง ID_Camera ของกล้องที่ต้องการลบ
                                                 >
                                                     Delete
                                                 </button>

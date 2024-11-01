@@ -1,24 +1,38 @@
 "use client";
 
-import React, { useEffect } from 'react'; // นำเข้า useEffect จาก React
+import React, { useEffect, useState} from 'react'; // นำเข้า useEffect จาก React
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { globals } from "styled-jsx/css";
 import 'boxicons/css/boxicons.min.css';
 import '../../app/script.js'; 
-import { useSession } from "next-auth/react";
-import { signOut } from "next-auth/react";
 
 function Navbar() {
-    const { data: session } = useSession();
-    
-    console.log("Session",session);
+    const [username, setUsername] = useState(null);
 
     async function logout(){
-        await signOut({ callbackUrl: "/" });
+        // ล้างข้อมูลที่จัดเก็บใน localStorage
+        localStorage.removeItem("username");
+        localStorage.removeItem("token"); // ถ้ามีการเก็บ token หรือข้อมูล session
+
+        // ล้างข้อมูลใน sessionStorage
+        sessionStorage.clear();
+
+        // ล้าง cookies (ถ้าคุณใช้ cookies)
+        document.cookie.split(";").forEach((c) => {
+            document.cookie = c.trim().split("=")[0] + "=;expires=Thu, 01 Jan 1970 00:00:00 UTC;";
+        });
+
+        // ทำการ redirect ผู้ใช้ไปยังหน้า login หรือหน้าอื่น ๆ ที่คุณต้องการ
+        window.location.href = "https://appb17.bd2-cloud.net/LoginPage"; // เปลี่ยน URL นี้ไปยังหน้าที่คุณต้องการ
     }
 
     useEffect(() => {
         setupNavTest(); // เรียกใช้ setupNavTest เมื่อ component ถูก mount
+
+        const storedUsername = localStorage.getItem("username");
+        if (storedUsername) {
+            setUsername(storedUsername);
+        }
     }, []);
 
     return (
@@ -26,7 +40,7 @@ function Navbar() {
             <header>
                 <div className="image-text">
                     <span className="image">
-                        <img className="w-10 ml-2" src="/image/logo-rmutt.png" alt="" />
+                        <img className="w-9 ml-2" src="/image/logo-rmutt.png" alt="" />
                     </span>
                 </div>
 
@@ -35,11 +49,10 @@ function Navbar() {
 
             <div className="menu-bar">
                 <div className="menu">
-
                     <ul className="p-0 mt-4 mb-3 back">
                         <li className="nav-link">
-                            <img className='w-8 ml-2.5 d-flex items-center justify-center rounded-circle' src={session?.user?.image} alt="" />
-                            <span className="ml-5 text nav-text">{session?.user?.name}</span>
+                            <img className='w-8 ml-2.5 d-flex items-center justify-center rounded-circle' src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTb0EDOSRHFzhbsqcLhlQBgTTUzZN88jzKTyQ&s" alt="" />
+                            <span className="ml-5 text nav-text">{username}</span>
                         </li>
                     </ul>
 
@@ -59,6 +72,14 @@ function Navbar() {
                             </a>
                         </li>
                     </ul>
+                    {/* <ul className="menu-links p-0">
+                        <li className="nav-link">
+                            <a href="AddSpace">
+                                <i className='bx bx-plus icon'></i> 
+                                <span className="text nav-text">AddSpace</span>
+                            </a>
+                        </li>
+                    </ul> */}
                     <ul className="menu-links p-0">
                         <li className="nav-link">
                             <a href="ResetPassword">
@@ -91,6 +112,14 @@ function Navbar() {
                             </a>
                         </li>
                     </ul>
+                    <ul className="menu-links p-0">
+                        <li className="nav-link">
+                            <a href="History_">
+                            <i className='bx bx-history icon'></i>
+                                <span className="text nav-text">History</span>
+                            </a>
+                        </li>
+                    </ul>
                 </div>
 
                 <div className="bottom-content cursor-pointer">
@@ -101,7 +130,7 @@ function Navbar() {
                         </a>
                     </li>
 
-                    <li className="mode mb-5">
+                    {/* <li className="mode mb-5">
                         <div className="moon-sun">
                             <i className='bx bx-moon icon moon'></i> 
                             <i className='bx bx-sun icon sun'></i> 
@@ -112,7 +141,7 @@ function Navbar() {
                         <div className="toggle-switch" onClick={toggleDarkMode}>
                             <span className="switch"></span> 
                         </div>
-                    </li>
+                    </li> */}
                 </div>
             </div>
         </nav>
@@ -120,6 +149,7 @@ function Navbar() {
 }
 
 export default Navbar;
+
 
 export const setupNavTest = () => {
     const body = document.querySelector("body");
